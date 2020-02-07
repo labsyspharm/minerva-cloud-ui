@@ -1,0 +1,25 @@
+.treeRoot {
+    text-align: left;
+}
+
+.treeNode {
+    cursor: pointer;
+}
+
+.treeNodeLevel1 {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.treeNodeLevel2 {
+    font-weight: normal;
+    font-size: 16px;
+}
+
+.treeNodeLevel3 {
+    font-size: 14px;
+}
+
+.treeNodeLeaf {
+    cursor: default;
+}
