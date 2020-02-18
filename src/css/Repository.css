@@ -1,0 +1,27 @@
+
+.thumbnailContainer {
+    margin: auto;
+    margin-top: 10px;
+}
+
+.thumbnailImg {
+    width: 100%;
+}
+
+.navigator {
+    margin-top: 10px;
+    margin-left: 10px;
+    overflow-y: scroll;
+    height: 95vh;
+    max-height: 95vh;
+}
+
+.customContextMenu {
+    position: fixed;
+    left: 500px;
+    top: 200px;
+}
+
+.imageDetails {
+    text-align: left;
+}

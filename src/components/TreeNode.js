@@ -1,20 +1,26 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faSpinner, faRegistered } from '@fortawesome/free-solid-svg-icons'
+import ContextMenu from './ContextMenu';
 
 class TreeNode extends React.Component {
-        
+
     constructor(props) {
         super(props);
 
         this.state = {
             loading: false
         }
+        this.ref = React.createRef();
 
         this.onLoadFinished = this.onLoadFinished.bind(this);
+        this.onDeleted = this.onDeleted.bind(this);
     }
 
     render() {
+        if (this.props.node.deleted) {
+            return null;
+        }
         if (this.props.node.root) {
             return (
                 <span>
@@ -31,20 +37,44 @@ class TreeNode extends React.Component {
             badgeClass += ' badge-' + this.props.node.color;
         }
         return (
-            <li className={liClass} onClick={(evt) => this.onClick(this.props.node, evt)}>
-               {this.props.node.title}&nbsp;  
+            <li ref={this.ref} className={liClass} onClick={(evt) => this.onClick(this.props.node, evt)} onContextMenu={(evt) => this.openContextMenu(this.props.node, evt)}>
+                {this.props.node.title}&nbsp;
                <span className={badgeClass}>{this.props.node.type}</span>
-               &nbsp;
-               {this.state.loading ? <FontAwesomeIcon icon={faSpinner} spin></FontAwesomeIcon> : null }
-               {this.loop(this.props.node.children)}
+                &nbsp;
+               {this.state.loading ? <FontAwesomeIcon icon={faSpinner} spin></FontAwesomeIcon> : null}
+    
+                {this.loop(this.props.node.children)}
             </li>
         );
-      }
+    }
+
+    renderContextMenu() {
+        if (this.state.contextMenu !== this.props.node) {
+            return null;
+        }
+        return (
+            <ContextMenu node={this.props.node} onDeleted={this.onDeleted} onClosed={this.onContextMenuClosed} />
+        );
+    }
+
+    onDeleted(node) {
+        node.deleted = true;
+        this.props.onClose(node);
+    }
+
+    openContextMenu(node, e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.props.onOpenContextMenu(node, this.ref);
+    }
 
     onClick(node, e) {
         e.stopPropagation();
         e.nativeEvent.stopImmediatePropagation();
-        if (this.props.node.expanded) {
+        if (this.props.node.leaf) {
+            this.props.onSelect(node);
+        }
+        else if (this.props.node.expanded) {
             this.props.onClose(node);
         } else if (!this.props.node.leaf) {
             this.setState({ loading: true });
@@ -62,10 +92,15 @@ class TreeNode extends React.Component {
         }
         return (
             <ul className="list-group-flush list-group">
-            {children.map((item, index) => (
-              <TreeNode key={index} node={item} onClick={this.props.onNodeClicked} onExpand={this.props.onExpand} onClose={this.props.onClose}/>
-            ))}
-          </ul>
+                {children.map((item, index) => (
+                    <TreeNode key={index} node={item} 
+                        onClick={this.props.onNodeClicked} 
+                        onExpand={this.props.onExpand} 
+                        onClose={this.props.onClose} 
+                        onSelect={this.props.onSelect} 
+                        onOpenContextMenu={this.props.onOpenContextMenu}/>
+                ))}
+            </ul>
         );
     }
 }

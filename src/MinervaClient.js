@@ -29,46 +29,71 @@ class MinervaClient {
     }
 
     createRepository(data) {
-        return this.apiFetch('POST', '/repository', null, data);
+        return this.apiFetch('POST', '/repository', {data: data});
+    }
+
+    deleteRepository(uuid) {
+        return this.apiFetch('DELETE', '/repository/' + uuid);
     }
 
     createImport(data) {
-        return this.apiFetch('POST', '/import', null, data);
+        return this.apiFetch('POST', '/import', {data: data});
     }
 
     updateImport(uuid, data) {
-        return this.apiFetch('PUT', '/import/' + uuid, null, data);
+        return this.apiFetch('PUT', '/import/' + uuid, {data: data});
     }
 
     getImportCredentials(uuid) {
-        return this.apiFetch('GET', '/import/' + uuid + '/credentials', null, null);
+        return this.apiFetch('GET', '/import/' + uuid + '/credentials');
     }
 
     listFilesetsInImport(uuid) {
-        return this.apiFetch('GET', '/import/' + uuid + '/filesets', null, null);
+        return this.apiFetch('GET', '/import/' + uuid + '/filesets');
     }
 
     listImportsInRepository(uuid) {
-        return this.apiFetch('GET', '/repository/' + uuid + '/imports', null, null);
+        return this.apiFetch('GET', '/repository/' + uuid + '/imports');
     }
 
     listImagesInFileset(uuid) {
-        return this.apiFetch('GET', '/fileset/' + uuid + '/images', null, null);
+        return this.apiFetch('GET', '/fileset/' + uuid + '/images');
     }
 
     listIncompleteImports() {
-        return this.apiFetch('GET', '/import/incomplete', null, null);
+        return this.apiFetch('GET', '/import/incomplete');
     }
 
-    apiFetch(method, route, params=null, body=null) {
-        const headers = {
+    getCognitoDetails() {
+        return this.apiFetch('GET', '/cognito_details');
+    }
+
+    getImageTile(uuid, level, x, y, z=0, t=0) {
+        let channelPathParams = '0,0000FF,0,1';
+        return this.apiFetch(
+            'GET',
+            '/image/' + uuid + '/render-tile/' + x + '/' + y + '/' + z + '/' + t
+            + '/' + level + '/' + channelPathParams, {binary: true, headers: {"Accept": "image/jpeg"} });
+
+    }
+
+    getImageDimensions(uuid) {
+        return this.apiFetch('GET', '/image/' + uuid + '/dimensions');
+    }
+
+    apiFetch(method, route, config={}) {
+        let params = config.params;
+        let body = config.body;
+        let binary = config.binary;
+        const defaultHeaders = {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + this.accessToken
         };
+        let headers = {...defaultHeaders, ...config.headers};
 
         let url = this.baseUrl + route;
 
-        if (params !== null) {
+        if (params) {
             const queryParams = Object.keys(params)
                 .map(key => key + '=' + params[key])
                 .join('&');
@@ -106,9 +131,16 @@ class MinervaClient {
                     });
                 }
 
-            return response.json();
+            if (response.status === 204) {
+                return '';
+            }
+            else if (!binary) {    
+                return response.json();
+            } else {
+                return response.blob();
+            }
         });
-      }
+    }
 
 }
 

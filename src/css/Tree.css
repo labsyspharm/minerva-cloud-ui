@@ -8,18 +8,18 @@
 
 .treeNodeLevel1 {
     font-weight: bold;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .treeNodeLevel2 {
     font-weight: normal;
-    font-size: 16px;
+    font-size: 12px;
 }
 
 .treeNodeLevel3 {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .treeNodeLeaf {
-    cursor: default;
+    cursor: pointer;
 }

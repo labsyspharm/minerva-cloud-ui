@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Client from '../MinervaClient';
 import TreeNode from './TreeNode';
 import '../css/Tree.css';
+import ContextMenu from './ContextMenu';
 
 class RepositoryTree extends Component {
 
@@ -10,13 +11,19 @@ class RepositoryTree extends Component {
 
         this.loadChildren = this.loadChildren.bind(this);
         this.closeNode = this.closeNode.bind(this);
+        this.select = this.select.bind(this);
+        this.openContextMenu = this.openContextMenu.bind(this);
+        this.onContextMenuClosed = this.onContextMenuClosed.bind(this);
 
         this.state = {
             rootNode: {
                 root: true,
                 children: [],
                 level: 1
-            }
+            },
+            selected: null,
+            context: null,
+            contextClass: ''
         }
 
         this.refreshRepositories();
@@ -126,7 +133,8 @@ class RepositoryTree extends Component {
                         uuid: image.uuid,
                         leaf: true,
                         level: node.level + 1,
-                        color: 'secondary'
+                        color: 'secondary',
+                        data: image
                     });
                 }
                 resolve(images);
@@ -140,10 +148,32 @@ class RepositoryTree extends Component {
         this.forceUpdate();
     }
 
+    select(node) {
+        console.log('Node selected ', node);
+        this.setState({selected: node});
+        this.props.onSelect(node);
+    }
+
+    onContextMenuClosed() {
+        this.setState({context: null});
+    }
+
+    onDeleted() {
+
+    }
+
+    openContextMenu(node, ref) {
+        console.log(ref);
+        var rect = ref.current.getBoundingClientRect();
+        this.setState({context: node, contextLeft: rect.left, contextTop: rect.top + 30});
+    }
+
     render() {
+        
         return (
             <div className="treeRoot">
-                <TreeNode node={this.state.rootNode} onExpand={this.loadChildren} onClose={this.closeNode}></TreeNode>
+                <TreeNode node={this.state.rootNode} onExpand={this.loadChildren} onClose={this.closeNode} onSelect={this.select} onOpenContextMenu={this.openContextMenu}></TreeNode>
+                <ContextMenu className={this.state.contextClass} node={this.state.context} onDeleted={this.onDeleted} onClosed={this.onContextMenuClosed} left={this.state.contextLeft} top={this.state.contextTop}/>
             </div>
         );
     }

@@ -14,23 +14,17 @@ class App extends React.Component {
   loginSuccess(token, user) {
     Client.setToken(token);
     Client.setUser(user);
+    Client.getCognitoDetails()
   }
 
   render() {
     return (
       <div className="App">
         <Header loginSuccess={this.loginSuccess}/>
-        <div className="container-fluid">
-          <div className="row">
-            <Sidemenu/>
-            <main role="main" className="col-md-9 ml-sm-auto col-lg-10 px-4">
-              <Router>
-                <ImportTool path="/" />
-                <Repositories path="repositories"/>
-              </Router>
-            </main>
-          </div>
-        </div>
+        <Router className="container-fluid">
+          <ImportTool path="/" />
+          <Repositories path="repositories"/>
+        </Router>
       </div>
     );
   }
