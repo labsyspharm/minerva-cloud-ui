@@ -1,7 +1,11 @@
 import React from 'react';
 import Client from './../MinervaClient';
 import RepositoryTree from './../components/RepositoryTree';
+import ImagePreview from './../components/ImagePreview';
 import '../css/Repository.css';
+import alertify from 'alertifyjs';
+import 'alertifyjs/build/css/alertify.min.css';
+import ImageMetadata from '../components/ImageMetadata';
 
 class Repositories extends React.Component {
     constructor(props) {
@@ -11,9 +15,9 @@ class Repositories extends React.Component {
             nodes: [],
             selected: null,
             imageSrc: null,
-            imageDetails: null
+            imageDetails: null,
+            previewSpinner: false
         };
-        this.refreshRepositories();
 
         this.select = this.select.bind(this);
     }
@@ -22,88 +26,81 @@ class Repositories extends React.Component {
         this.setState({ selected: node });
         let image = node.data;
         let pyramidTopLevel = image.pyramid_levels - 1;
-        Client.getImageTile(node.uuid, pyramidTopLevel, 0, 0).then(response => {
+        this.setState({previewSpinner: true});
+        Client.getImage(node.uuid).then(response => {
             console.log(response);
-            var objectURL = URL.createObjectURL(response);
-            this.setState({ imageSrc: objectURL });
+            if (response.included && response.included.rendering_settings && response.included.rendering_settings.length > 0) {
+                let settings = response.included.rendering_settings[0];
+                Client.getPrerenderedImageTile(node.uuid, pyramidTopLevel, 0, 0, settings.uuid).then(response => {
+                    console.log(response);
+                    var objectURL = URL.createObjectURL(response);
+                    this.setState({ imageSrc: objectURL, previewSpinner: false });
+                }).catch(err => {
+                    alertify.error(err);
+                    this.setState({ imageSrc: null, previewSpinner: false });
+                });
+            } else {
+                Client.getImageTile(node.uuid, pyramidTopLevel, 0, 0).then(response => {
+                    console.log(response);
+                    var objectURL = URL.createObjectURL(response);
+                    this.setState({ imageSrc: objectURL, previewSpinner: false });
+                }).catch(err => {
+                    console.error(err);
+                    alertify.error(err);
+                    this.setState({ imageSrc: null, previewSpinner: false }); 
+                });
+            }
+
+
         });
+
         Client.getImageDimensions(node.uuid).then(response => {
             console.log(response);
             this.setState({imageDetails: response.data});
-        });
-    }
-
-    refreshRepositories() {
-        if (!Client.loggedIn()) {
-            return;
-        }
-        Client.getRepositories().then(repos => {
-            console.log(repos);
-            let repositories = [];
-            for (let repo of repos.included.repositories) {
-                repositories.push({
-                    type: 'repository',
-                    uuid: repo.uuid,
-                    key: repo.uuid,
-                    title: repo.name,
-                    isLeaf: false,
-                    description: 'Repository',
-                    level: 1,
-                    expanded: false,
-                    color: 'primary'
-                });
-            }
-            this.setState({ nodes: repositories });
+        }).catch(err => {
+            console.error(err);
+            alertify.error('Error in loading image metadata');
+            this.setState({imageDetails: null});
         });
     }
 
     render() {
+        if (!this.props.loggedIn) {
+            return null;
+        }
+        let imageTitle = this.state.selected ? this.state.selected.data.name : '';
         return (
             <div className="row">
-                <div className="col-3 bg-light navigator">
+                <div className="col-3 navigator">
                     <h2 className="h4">EXPLORE</h2>
-                    <RepositoryTree onSelect={this.select} />
+                    <RepositoryTree onSelect={this.select} refresh={this.props.refresh}/>
                 </div>
-                <div className="col overflow-hidden bg-white">
-                    {this.renderImageThumbnail()}
+                <div className="col overflow-hidden">
+                    {this.renderSpinner()}
+                    <ImagePreview imageSrc={this.state.imageSrc} title={imageTitle} spinner={this.state.previewSpinner}/>
                 </div>
-                <div className="col-3 bg-light border">
-                    {this.renderImageDetails()}
+                <div className="col-3 metadata">
+                    <h2 className="h4">METADATA</h2>
+                    <ImageMetadata metadata={this.state.imageDetails}/>
                 </div>
             </div>
 
         );
     }
 
-    renderImageDetails() {
-        if (!this.state.imageDetails) {
-            return null;
-        }
-        let pixels = this.state.imageDetails.pixels;
-        return (
-            <table className="imageDetails" cellPadding="5">
-                <tbody>
-                <tr><td>Uuid:</td><td>{this.state.imageDetails.image_uuid}</td></tr>
-                <tr><td>Channels:</td><td>{pixels.SizeC}</td></tr>
-                <tr><td>Width:</td><td>{pixels.SizeX}</td></tr>
-                <tr><td>Height:</td><td>{pixels.SizeY}</td></tr>
-                <tr><td>Z-Levels:</td><td>{pixels.SizeZ}</td></tr>
-                </tbody>
-            </table>
-        );
-    }
-
-    renderImageThumbnail() {
-        if (!this.state.selected || !this.state.selected.data) {
+    renderSpinner() {
+        if (!this.state.previewSpinner) {
             return null;
         }
         return (
-            <div className="thumbnailContainer">
-                <img className="thumbnailImg" src={this.state.imageSrc} />
-                <h5 className="card-title">{this.state.selected ? this.state.selected.data.name : null}</h5>
+            <div className="thumbnailSpinner">
+                <div className="spinner-border bg-dark" role="status">
+                    <span className="sr-only">Loading...</span>
+                </div>
             </div>
         );
     }
+
 }
 
 export default Repositories;

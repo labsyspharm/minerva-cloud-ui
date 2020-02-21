@@ -5,9 +5,6 @@ import 'alertifyjs/build/css/alertify.min.css';
 
 class ContextMenu extends React.Component {
 
-    constructor(props) {
-        super(props);
-    }
     render() {
         if (!this.props.node) {
             return null;
@@ -22,7 +19,7 @@ class ContextMenu extends React.Component {
         let className = 'dropdown-menu dropdown-menu-sm show';
         return (
             <div style={containerStyle}>
-                <div class={className} id="context-menu" onBlur={this.close()}>
+                <div class={className} id="context-menu">
                     {this.renderItems(this.props.node.type)}
                 </div>
             </div>
@@ -33,18 +30,21 @@ class ContextMenu extends React.Component {
         if (nodeType == 'repository') {
             return (
                 <span>
-                <a class="dropdown-item" onClick={(evt) => this.onClick(evt, 'permissions')}>Manage Permissions</a>
-                <a class="dropdown-item" onClick={(evt) => this.onClick(evt, 'delete')}>Delete</a>
+                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'permissions')}>Manage Permissions</a>
+                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'delete')}>Delete</a>
                 </span>
             )
         } else if (nodeType == 'fileset') {
             return (
-                <a class="dropdown-item" onClick={(evt) => this.onClick(evt, 'delete')}>Delete</a>
+                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'delete')}>Delete</a>
             )
         }
         else if (nodeType == 'image') {
             return (
-                <a class="dropdown-item" onClick={(evt) => this.onClick(evt, 'open')}>Open in Minerva Story</a>
+                <span>
+                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'open')}>Open in Minerva Story</a>
+                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'permissions')}>Manage Permissions</a>
+                </span>
             )
         }
     }
@@ -77,8 +77,8 @@ class ContextMenu extends React.Component {
     }
 
     close() {
-        console.log('blur');
+        this.props.onClosed();
     }
-}
 
+}
 export default ContextMenu;

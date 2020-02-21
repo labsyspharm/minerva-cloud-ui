@@ -4,6 +4,8 @@
 
 .treeNode {
     cursor: pointer;
+    background-color: #111;
+    color: #eee;
 }
 
 .treeNodeLevel1 {
@@ -22,4 +24,6 @@
 
 .treeNodeLeaf {
     cursor: pointer;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }

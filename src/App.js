@@ -2,7 +2,6 @@ import React from 'react';
 import './css/App.css';
 import './css/dashboard.css';
 import Header from './components/Header'; 
-import Sidemenu from './components/Sidemenu';
 import ImportTool from './pages/ImportTool';
 import Repositories from './pages/Repositories';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -11,19 +10,37 @@ import Client from './MinervaClient';
 
 class App extends React.Component {
 
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      refresh: new Date()
+    }
+    this.loginSuccess = this.loginSuccess.bind(this);
+    this.logoutSuccess = this.logoutSuccess.bind(this);
+  }
+
   loginSuccess(token, user) {
-    Client.setToken(token);
     Client.setUser(user);
-    Client.getCognitoDetails()
+    Client.getCognitoDetails();
+    this.setState({loggedIn: true});
+    this.forceUpdate();
+    console.log('loginSuccess');
+  }
+
+  logoutSuccess() {
+    this.setState({loggedIn: false});
+    this.forceUpdate();
+    console.log('logoutSuccess');
   }
 
   render() {
     return (
-      <div className="App">
-        <Header loginSuccess={this.loginSuccess}/>
-        <Router className="container-fluid">
-          <ImportTool path="/" />
-          <Repositories path="repositories"/>
+      <div className="App text-light">
+        <Header loginSuccess={this.loginSuccess} logoutSuccess={this.logoutSuccess} refresh={this.state.refresh}/>
+        <Router className="container-fluid text-light">
+          <ImportTool path="/import" loggedIn={this.state.loggedIn}/>
+          <Repositories path="/" loggedIn={this.state.loggedIn} />
         </Router>
       </div>
     );

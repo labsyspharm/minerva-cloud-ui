@@ -8,12 +8,24 @@
     width: 100%;
 }
 
+.thumbnailSpinner {
+    display: inline;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+}
+
 .navigator {
     margin-top: 10px;
     margin-left: 10px;
     overflow-y: scroll;
     height: 95vh;
     max-height: 95vh;
+    scrollbar-color: dark;
+}
+
+.metadata {
+    margin-top: 10px;
 }
 
 .customContextMenu {
@@ -24,4 +36,9 @@
 
 .imageDetails {
     text-align: left;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: lightgray;
+    background-image: none;
 }

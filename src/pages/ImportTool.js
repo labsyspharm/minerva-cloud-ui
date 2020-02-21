@@ -315,7 +315,7 @@ class ImportTool extends React.Component {
             finishedStatusText = 'Import finished!';
         }
         return (
-            <div className="card">
+            <div className="card bg-dark">
                 <div className="card-body">
                     <h5 className="card-title">{this.state.selectedFile.name}&nbsp;<FontAwesomeIcon icon={faMicroscope} /></h5>
                     <p>{this.state.selectedFile.sizeReadable}</p>

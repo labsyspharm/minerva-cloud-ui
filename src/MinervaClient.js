@@ -4,20 +4,15 @@ class MinervaClient {
 
     constructor(baseUrl) {
         this.baseUrl = baseUrl;
-        this.accessToken = null;
         this.currentUser = null;
     }
 
-    setToken(token) {
-        this.accessToken = token;
+    loggedIn() {
+        return this.currentUser !== null;
     }
 
     setUser(user) {
         this.currentUser = user;
-    }
-
-    loggedIn() {
-        return this.accessToken != null;
     }
 
     getRepositories() {
@@ -29,7 +24,7 @@ class MinervaClient {
     }
 
     createRepository(data) {
-        return this.apiFetch('POST', '/repository', {data: data});
+        return this.apiFetch('POST', '/repository', { data: data });
     }
 
     deleteRepository(uuid) {
@@ -37,11 +32,11 @@ class MinervaClient {
     }
 
     createImport(data) {
-        return this.apiFetch('POST', '/import', {data: data});
+        return this.apiFetch('POST', '/import', { data: data });
     }
 
     updateImport(uuid, data) {
-        return this.apiFetch('PUT', '/import/' + uuid, {data: data});
+        return this.apiFetch('PUT', '/import/' + uuid, { data: data });
     }
 
     getImportCredentials(uuid) {
@@ -60,6 +55,10 @@ class MinervaClient {
         return this.apiFetch('GET', '/fileset/' + uuid + '/images');
     }
 
+    listImagesInRepository(uuid) {
+        return this.apiFetch('GET', `/repository/${uuid}/images`);
+    }
+
     listIncompleteImports() {
         return this.apiFetch('GET', '/import/incomplete');
     }
@@ -68,28 +67,39 @@ class MinervaClient {
         return this.apiFetch('GET', '/cognito_details');
     }
 
-    getImageTile(uuid, level, x, y, z=0, t=0) {
-        let channelPathParams = '0,0000FF,0,1';
+    getImageTile(uuid, level, x, y, z = 0, t = 0) {
+        let channelPathParams = '0,FFFFFF,0,1';
         return this.apiFetch(
             'GET',
             '/image/' + uuid + '/render-tile/' + x + '/' + y + '/' + z + '/' + t
-            + '/' + level + '/' + channelPathParams, {binary: true, headers: {"Accept": "image/jpeg"} });
+            + '/' + level + '/' + channelPathParams, { binary: true, headers: { "Accept": "image/jpeg" } });
 
+    }
+
+    getPrerenderedImageTile(uuid, level, x, y, renderingSettingsUuid, z = 0, t = 0) {
+        return this.apiFetch(
+            'GET',
+            '/image/' + uuid + '/prerendered-tile/' + x + '/' + y + '/' + z + '/' + t
+            + '/' + level + '/' + renderingSettingsUuid, { binary: true, headers: { "Accept": "image/jpeg" } });
+
+    }
+
+    getImage(uuid) {
+        return this.apiFetch('GET', '/image/' + uuid);
     }
 
     getImageDimensions(uuid) {
         return this.apiFetch('GET', '/image/' + uuid + '/dimensions');
     }
 
-    apiFetch(method, route, config={}) {
+    apiFetch(method, route, config = {}) {
         let params = config.params;
         let body = config.body;
         let binary = config.binary;
         const defaultHeaders = {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + this.accessToken
+            'Content-Type': 'application/json'
         };
-        let headers = {...defaultHeaders, ...config.headers};
+        let headers = { ...defaultHeaders, ...config.headers };
 
         let url = this.baseUrl + route;
 
@@ -112,9 +122,9 @@ class MinervaClient {
         if (body !== null) {
             args['body'] = JSON.stringify(body)
         }
-
-        return fetch(url, args)
-            .then(response => {
+        return this.currentUser.getSession((err, session) => {
+            headers["Authorization"] = 'Bearer ' + session.idToken.jwtToken;
+            return fetch(url, args).then(response => {
                 if (response.status === 401) {
                     // Access token has expired, refresh token
                     // FIXME Refreshing should ideally be done before token expires
@@ -125,22 +135,26 @@ class MinervaClient {
                 // Turn HTTP error responses into rejected promises
                 if (!response.ok) {
                     return response.text()
-                    .then(text => {
-                        return Promise.reject('Error ' + response.status + ' ('
-                                            + response.statusText + '): ' + text);
-                    });
+                        .then(text => {
+                            return Promise.reject('Error ' + response.status + ' ('
+                                + response.statusText + '): ' + text);
+                        });
                 }
 
-            if (response.status === 204) {
-                return '';
-            }
-            else if (!binary) {    
-                return response.json();
-            } else {
-                return response.blob();
-            }
+                if (response.status === 204) {
+                    return Promise.resolve();
+                }
+                else if (!binary) {
+                    console.log(response);
+                    return response.json();
+
+                } else {
+                    return response.blob();
+                }
+            });
         });
     }
+
 
 }
 

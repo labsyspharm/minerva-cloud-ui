@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner, faRegistered } from '@fortawesome/free-solid-svg-icons'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import ContextMenu from './ContextMenu';
 
 class TreeNode extends React.Component {
@@ -18,7 +18,7 @@ class TreeNode extends React.Component {
     }
 
     render() {
-        if (this.props.node.deleted) {
+        if (this.props.node == null || this.props.node.deleted) {
             return null;
         }
         if (this.props.node.root) {
@@ -28,7 +28,7 @@ class TreeNode extends React.Component {
                 </span>
             )
         }
-        let liClass = 'list-group-flush list-group-item treeNode ' + 'treeNodeLevel' + this.props.node.level;
+        let liClass = 'list-group-flush list-group-item treeNode treeNodeLevel' + this.props.node.level;
         if (this.props.node.leaf) {
             liClass += ' treeNodeLeaf list-group-flush';
         }
@@ -87,7 +87,7 @@ class TreeNode extends React.Component {
     }
 
     loop(children) {
-        if (!children || children.length == 0) {
+        if (!children || children.length === 0) {
             return null;
         }
         return (

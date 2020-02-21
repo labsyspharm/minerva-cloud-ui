@@ -16,29 +16,24 @@ class RepositoryTree extends Component {
         this.onContextMenuClosed = this.onContextMenuClosed.bind(this);
 
         this.state = {
-            rootNode: {
-                root: true,
-                children: [],
-                level: 1
-            },
+            rootNode: null,
             selected: null,
             context: null,
             contextClass: ''
         }
 
-        this.refreshRepositories();
+        this.refreshRepositories(); 
     }
 
     refreshRepositories() {
         if (!Client.loggedIn()) {
+            this.setState({rootNode: null});
             return;
         }
         Client.getRepositories().then(repos => {
             console.log(repos);
             let repositories = [];
-            let id = 0;
             for (let repo of repos.included.repositories) {
-                id++;
                 console.log(repo);
                 repositories.push({
                     type: 'repository',
@@ -59,6 +54,8 @@ class RepositoryTree extends Component {
                 level: 1
             }
             this.setState({ rootNode: rootNode });
+        }).catch(err => {
+            console.error(err);
         });
     }
 
@@ -69,7 +66,7 @@ class RepositoryTree extends Component {
         }
         let loadFunction = null;
         if (node.type === 'repository') {
-            loadFunction = this.loadFilesets;
+            loadFunction = this.loadImagesInRepository;
         } else if (node.type === 'fileset') {
             loadFunction = this.loadImages;
         }
@@ -88,40 +85,9 @@ class RepositoryTree extends Component {
         });
     }
 
-    loadFilesets(node) {
+    loadImagesInRepository(node) {
         return new Promise((resolve, reject) => {
-            Client.listImportsInRepository(node.uuid).then(response => {
-                let filesets = [];
-                let promises = [];
-                for (let imp of response.data) {
-                    let id = 0;
-                    let loadFilesets = Client.listFilesetsInImport(imp.uuid);
-                    promises.push(loadFilesets);
-                    loadFilesets.then(response => {
-                        for (let fileset of response.data) {
-                            id++;
-                            filesets.push({
-                                type: 'fileset',
-                                uuid: fileset.uuid,
-                                id: id,
-                                title: fileset.name,
-                                children: [],
-                                level: node.level + 1,
-                                color: 'info'
-                            });
-                        }
-                    });
-                }
-                Promise.all(promises).then(() => {
-                    resolve(filesets);
-                });
-            });
-        });
-    }
-
-    loadImages(node) {
-        return new Promise((resolve, reject) => {
-            Client.listImagesInFileset(node.uuid).then(response => {
+            Client.listImagesInRepository(node.uuid).then(response => {
                 let images = [];
                 let id = 0;
                 for (let image of response.data) {
@@ -141,6 +107,60 @@ class RepositoryTree extends Component {
             });
         });
     }
+
+    // loadFilesets(node) {
+    //     return new Promise((resolve, reject) => {
+    //         Client.listImportsInRepository(node.uuid).then(response => {
+    //             let filesets = [];
+    //             let promises = [];
+    //             for (let imp of response.data) {
+    //                 let id = 0;
+    //                 let loadFilesets = Client.listFilesetsInImport(imp.uuid);
+    //                 promises.push(loadFilesets);
+    //                 loadFilesets.then(response => {
+    //                     for (let fileset of response.data) {
+    //                         id++;
+    //                         filesets.push({
+    //                             type: 'fileset',
+    //                             uuid: fileset.uuid,
+    //                             id: id,
+    //                             title: fileset.name,
+    //                             children: [],
+    //                             level: node.level + 1,
+    //                             color: 'info'
+    //                         });
+    //                     }
+    //                 });
+    //             }
+    //             Promise.all(promises).then(() => {
+    //                 resolve(filesets);
+    //             });
+    //         });
+    //     });
+    // }
+
+    // loadImages(node) {
+    //     return new Promise((resolve, reject) => {
+    //         Client.listImagesInFileset(node.uuid).then(response => {
+    //             let images = [];
+    //             let id = 0;
+    //             for (let image of response.data) {
+    //                 id++;
+    //                 images.push({
+    //                     type: 'image',
+    //                     id: id,
+    //                     title: image.name,
+    //                     uuid: image.uuid,
+    //                     leaf: true,
+    //                     level: node.level + 1,
+    //                     color: 'secondary',
+    //                     data: image
+    //                 });
+    //             }
+    //             resolve(images);
+    //         });
+    //     });
+    // }
 
     closeNode(node) {
         node.expanded = false;

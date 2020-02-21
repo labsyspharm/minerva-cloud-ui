@@ -38,6 +38,8 @@ class Login extends React.Component {
             });
         }
 
+        this.login = this.login.bind(this);
+
     }
 
     handleChange = evt => {
@@ -52,10 +54,9 @@ class Login extends React.Component {
     logout = () => {
         this.setState({ loggedIn: false});
         localStorage.removeItem('loggedInUser');
-        if (this.state.userPool) {
-            let cognitoUser = this.state.userPool.getCurrentUser();
-            cognitoUser.signOut();
-        }
+        let cognitoUser = this.state.cognitoUserPool.getCurrentUser();
+        cognitoUser.signOut();
+        this.props.logoutSuccess();
     }
   
     login = () => {
@@ -84,7 +85,6 @@ class Login extends React.Component {
               this.setState({ loggedIn: true, loggedInUser: this.state.username});
               localStorage.setItem('loggedInUser', this.state.username);
               alertify.success("Login success", 2);
-              var cognitoUser = this.state.userPool.getCurrentUser();
               loginSuccess(response.getIdToken().getJwtToken(), cognitoUser);
           }).catch(err => {
               console.error(err);
