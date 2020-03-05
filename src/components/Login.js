@@ -118,7 +118,7 @@ class Login extends React.Component {
         return (
         <form className="form-inline">
             <span className="text-light">{this.state.loggedInUser}</span>&nbsp;
-            <button className="btn btn-primary btn-sm" type="button" onClick={this.logout}>Logout</button>
+            <button className="btn btn-secondary btn-sm" type="button" onClick={this.logout}>Logout</button>
         </form>
         );
     }

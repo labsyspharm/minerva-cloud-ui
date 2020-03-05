@@ -42,6 +42,7 @@ class App extends React.Component {
           <ImportTool path="/import" loggedIn={this.state.loggedIn}/>
           <Repositories path="/" loggedIn={this.state.loggedIn} />
         </Router>
+        <span className="copyright">©2020, Laboratory of Systems Pharmacology. All rights reserved.</span>
       </div>
     );
   }

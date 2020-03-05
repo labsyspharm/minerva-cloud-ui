@@ -18,7 +18,7 @@ class TreeNode extends React.Component {
     }
 
     render() {
-        if (this.props.node == null || this.props.node.deleted) {
+        if (this.props.node == null) {
             return null;
         }
         if (this.props.node.root) {
@@ -32,14 +32,17 @@ class TreeNode extends React.Component {
         if (this.props.node.leaf) {
             liClass += ' treeNodeLeaf list-group-flush';
         }
+        if (this.props.node.deleted) {
+            liClass += ' treeNodeDeleted';
+        }
         let badgeClass = 'badge badge-pill';
         if (this.props.node.color) {
             badgeClass += ' badge-' + this.props.node.color;
         }
+        let nodeType = this.props.node.type.charAt(0).toUpperCase();
         return (
             <li ref={this.ref} className={liClass} onClick={(evt) => this.onClick(this.props.node, evt)} onContextMenu={(evt) => this.openContextMenu(this.props.node, evt)}>
-                {this.props.node.title}&nbsp;
-               <span className={badgeClass}>{this.props.node.type}</span>
+                <span className={badgeClass}>{nodeType}</span>&nbsp;{this.props.node.title}
                 &nbsp;
                {this.state.loading ? <FontAwesomeIcon icon={faSpinner} spin></FontAwesomeIcon> : null}
     
@@ -65,7 +68,7 @@ class TreeNode extends React.Component {
     openContextMenu(node, e) {
         e.preventDefault();
         e.stopPropagation();
-        this.props.onOpenContextMenu(node, this.ref);
+        this.props.onOpenContextMenu(node, e);
     }
 
     onClick(node, e) {

@@ -31,6 +31,10 @@ class MinervaClient {
         return this.apiFetch('DELETE', '/repository/' + uuid);
     }
 
+    deleteImage(uuid) {
+        return this.apiFetch('DELETE', '/image/' + uuid);
+    }
+
     createImport(data) {
         return this.apiFetch('POST', '/import', { data: data });
     }
@@ -123,36 +127,49 @@ class MinervaClient {
             args['body'] = JSON.stringify(body)
         }
         return this.currentUser.getSession((err, session) => {
-            headers["Authorization"] = 'Bearer ' + session.idToken.jwtToken;
-            return fetch(url, args).then(response => {
-                if (response.status === 401) {
-                    // Access token has expired, refresh token
-                    // FIXME Refreshing should ideally be done before token expires
-                    this.currentUser.getSession((err, session) => {
-                        this.setToken(session.idToken.jwtToken);
+            if (!session.isValid()) {
+                this.currentUser.refreshSession(session.getRefreshToken(), (err, session) => {
+                    return this._fetch(url, args, session, headers, binary);
+                });
+            }
+            return this._fetch(url, args, session, headers, binary);
+        });
+    }
+
+    _fetch(url, args, session, headers, binary) {
+        headers["Authorization"] = 'Bearer ' + session.idToken.jwtToken;
+        return fetch(url, args).then(response => {
+            // Turn HTTP error responses into rejected promises
+            if (!response.ok) {
+                return response.text()
+                    .then(text => {
+                        return Promise.reject('Error ' + response.status + ' ('
+                            + response.statusText + '): ' + text);
                     });
-                }
-                // Turn HTTP error responses into rejected promises
-                if (!response.ok) {
-                    return response.text()
-                        .then(text => {
-                            return Promise.reject('Error ' + response.status + ' ('
-                                + response.statusText + '): ' + text);
-                        });
-                }
+            }
 
-                if (response.status === 204) {
-                    return Promise.resolve();
-                }
-                else if (!binary) {
-                    console.log(response);
-                    return response.json();
+            if (response.status === 204) {
+                return Promise.resolve();
+            }
+            else if (!binary) {
+                console.log(response);
+                return response.json();
+            } else {
+                return response.blob();
+            }
+        }).catch(err => {
+            console.error(err);
+            return Promise.reject();
+        });
+    }
 
-                } else {
-                    return response.blob();
-                }
+    getToken() {
+        return new Promise((resolve, reject) => {
+            this.currentUser.getSession((err, session) => {
+                resolve('Bearer ' + session.idToken.jwtToken);
             });
         });
+
     }
 
 

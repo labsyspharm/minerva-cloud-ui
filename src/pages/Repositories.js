@@ -2,10 +2,12 @@ import React from 'react';
 import Client from './../MinervaClient';
 import RepositoryTree from './../components/RepositoryTree';
 import ImagePreview from './../components/ImagePreview';
+import ChannelGroups from '../components/ChannelGroups';
 import '../css/Repository.css';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
 import ImageMetadata from '../components/ImageMetadata';
+import OSDViewer from '../components/OSDViewer';
 
 class Repositories extends React.Component {
     constructor(props) {
@@ -16,52 +18,46 @@ class Repositories extends React.Component {
             selected: null,
             imageSrc: null,
             imageDetails: null,
-            previewSpinner: false
+            previewSpinner: false,
+            osdMetadata: null
         };
 
         this.select = this.select.bind(this);
+        this.selectChannelGroup = this.selectChannelGroup.bind(this);
     }
 
     select(node) {
         this.setState({ selected: node });
         let image = node.data;
-        let pyramidTopLevel = image.pyramid_levels - 1;
         this.setState({previewSpinner: true});
-        Client.getImage(node.uuid).then(response => {
-            console.log(response);
+        let getImageResponse = Client.getImage(node.uuid);
+        let getImageDimensionsResponse = Client.getImageDimensions(node.uuid);
+
+        Promise.all([getImageResponse, getImageDimensionsResponse]).then(values => {
+            let response = values[0];
+            let renderingSettings = [];
+            let channelGroups = [];
             if (response.included && response.included.rendering_settings && response.included.rendering_settings.length > 0) {
-                let settings = response.included.rendering_settings[0];
-                Client.getPrerenderedImageTile(node.uuid, pyramidTopLevel, 0, 0, settings.uuid).then(response => {
-                    console.log(response);
-                    var objectURL = URL.createObjectURL(response);
-                    this.setState({ imageSrc: objectURL, previewSpinner: false });
-                }).catch(err => {
-                    alertify.error(err);
-                    this.setState({ imageSrc: null, previewSpinner: false });
-                });
-            } else {
-                Client.getImageTile(node.uuid, pyramidTopLevel, 0, 0).then(response => {
-                    console.log(response);
-                    var objectURL = URL.createObjectURL(response);
-                    this.setState({ imageSrc: objectURL, previewSpinner: false });
-                }).catch(err => {
-                    console.error(err);
-                    alertify.error(err);
-                    this.setState({ imageSrc: null, previewSpinner: false }); 
-                });
+                renderingSettings = response.included.rendering_settings[0];
+                channelGroups = response.included.rendering_settings;
             }
 
+            response = values[1];
+            let osdMetadata = {};
+            Object.assign(osdMetadata, response.data);
+            osdMetadata.image = image;
+            osdMetadata.renderingSettingsUuid = renderingSettings.uuid;
+            this.setState({imageDetails: osdMetadata, osdMetadata: osdMetadata, channelGroups: channelGroups});
 
         });
 
-        Client.getImageDimensions(node.uuid).then(response => {
-            console.log(response);
-            this.setState({imageDetails: response.data});
-        }).catch(err => {
-            console.error(err);
-            alertify.error('Error in loading image metadata');
-            this.setState({imageDetails: null});
-        });
+    }
+
+    selectChannelGroup(uuid) {
+        let osdMetadata = {};
+        Object.assign(osdMetadata, this.state.osdMetadata);
+        osdMetadata.renderingSettingsUuid = uuid;
+        this.setState({osdMetadata: osdMetadata});
     }
 
     render() {
@@ -71,17 +67,21 @@ class Repositories extends React.Component {
         let imageTitle = this.state.selected ? this.state.selected.data.name : '';
         return (
             <div className="row">
-                <div className="col-3 navigator">
-                    <h2 className="h4">EXPLORE</h2>
+                <div className="navigator">
+                    <h5 className="h5">EXPLORE</h5>
                     <RepositoryTree onSelect={this.select} refresh={this.props.refresh}/>
                 </div>
-                <div className="col overflow-hidden">
-                    {this.renderSpinner()}
-                    <ImagePreview imageSrc={this.state.imageSrc} title={imageTitle} spinner={this.state.previewSpinner}/>
+                <div className="viewer overflow-hidden">
+                    
+                    <OSDViewer metadata={this.state.osdMetadata} />
+                    
                 </div>
-                <div className="col-3 metadata">
-                    <h2 className="h4">METADATA</h2>
-                    <ImageMetadata metadata={this.state.imageDetails}/>
+                <div className="metadata">
+                    <h5 className="h5">METADATA</h5>
+                    <ImageMetadata metadata={this.state.imageDetails} image={this.state.selected} />
+                    <hr/>
+                    <h5 className="h5">CHANNEL GROUPS</h5>
+                    <ChannelGroups groups={this.state.channelGroups} onChannelGroupSelected={this.selectChannelGroup}/>
                 </div>
             </div>
 

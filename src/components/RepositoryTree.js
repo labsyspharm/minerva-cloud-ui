@@ -14,6 +14,8 @@ class RepositoryTree extends Component {
         this.select = this.select.bind(this);
         this.openContextMenu = this.openContextMenu.bind(this);
         this.onContextMenuClosed = this.onContextMenuClosed.bind(this);
+        this.onDeleted = this.onDeleted.bind(this);
+        this.onRestored = this.onRestored.bind(this);
 
         this.state = {
             rootNode: null,
@@ -100,67 +102,14 @@ class RepositoryTree extends Component {
                         leaf: true,
                         level: node.level + 1,
                         color: 'secondary',
-                        data: image
+                        data: image,
+                        deleted: image.deleted
                     });
                 }
                 resolve(images);
             });
         });
     }
-
-    // loadFilesets(node) {
-    //     return new Promise((resolve, reject) => {
-    //         Client.listImportsInRepository(node.uuid).then(response => {
-    //             let filesets = [];
-    //             let promises = [];
-    //             for (let imp of response.data) {
-    //                 let id = 0;
-    //                 let loadFilesets = Client.listFilesetsInImport(imp.uuid);
-    //                 promises.push(loadFilesets);
-    //                 loadFilesets.then(response => {
-    //                     for (let fileset of response.data) {
-    //                         id++;
-    //                         filesets.push({
-    //                             type: 'fileset',
-    //                             uuid: fileset.uuid,
-    //                             id: id,
-    //                             title: fileset.name,
-    //                             children: [],
-    //                             level: node.level + 1,
-    //                             color: 'info'
-    //                         });
-    //                     }
-    //                 });
-    //             }
-    //             Promise.all(promises).then(() => {
-    //                 resolve(filesets);
-    //             });
-    //         });
-    //     });
-    // }
-
-    // loadImages(node) {
-    //     return new Promise((resolve, reject) => {
-    //         Client.listImagesInFileset(node.uuid).then(response => {
-    //             let images = [];
-    //             let id = 0;
-    //             for (let image of response.data) {
-    //                 id++;
-    //                 images.push({
-    //                     type: 'image',
-    //                     id: id,
-    //                     title: image.name,
-    //                     uuid: image.uuid,
-    //                     leaf: true,
-    //                     level: node.level + 1,
-    //                     color: 'secondary',
-    //                     data: image
-    //                 });
-    //             }
-    //             resolve(images);
-    //         });
-    //     });
-    // }
 
     closeNode(node) {
         node.expanded = false;
@@ -178,14 +127,18 @@ class RepositoryTree extends Component {
         this.setState({context: null});
     }
 
-    onDeleted() {
-
+    onDeleted(node) {
+        node.deleted = true;
+        this.forceUpdate();
     }
 
-    openContextMenu(node, ref) {
-        console.log(ref);
-        var rect = ref.current.getBoundingClientRect();
-        this.setState({context: node, contextLeft: rect.left, contextTop: rect.top + 30});
+    onRestored(node) {
+        node.deleted = false;
+        this.forceUpdate();
+    }
+
+    openContextMenu(node, e) {
+        this.setState({context: node, contextLeft: e.pageX, contextTop: e.pageY});
     }
 
     render() {
@@ -193,7 +146,7 @@ class RepositoryTree extends Component {
         return (
             <div className="treeRoot">
                 <TreeNode node={this.state.rootNode} onExpand={this.loadChildren} onClose={this.closeNode} onSelect={this.select} onOpenContextMenu={this.openContextMenu}></TreeNode>
-                <ContextMenu className={this.state.contextClass} node={this.state.context} onDeleted={this.onDeleted} onClosed={this.onContextMenuClosed} left={this.state.contextLeft} top={this.state.contextTop}/>
+                <ContextMenu className={this.state.contextClass} node={this.state.context} onDeleted={this.onDeleted} onRestored={this.onRestored} onClosed={this.onContextMenuClosed} left={this.state.contextLeft} top={this.state.contextTop}/>
             </div>
         );
     }

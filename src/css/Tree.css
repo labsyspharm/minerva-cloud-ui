@@ -4,8 +4,12 @@
 
 .treeNode {
     cursor: pointer;
-    background-color: #111;
+    background-color: rgba(0, 0, 0, 0);
     color: #eee;
+}
+
+.treeNode:hover {
+    /*background-color: #333;*/
 }
 
 .treeNodeLevel1 {
@@ -26,4 +30,12 @@
     cursor: pointer;
     padding-top: 5px;
     padding-bottom: 5px;
+}
+
+.treeNodeLeaf:hover {
+    background-color: rgba(65, 75, 85, 0.75);
+}
+
+.treeNodeDeleted {
+    text-decoration: line-through;
 }
