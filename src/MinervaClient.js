@@ -5,6 +5,7 @@ class MinervaClient {
     constructor(baseUrl) {
         this.baseUrl = baseUrl;
         this.currentUser = null;
+        this.GRANTS = ['Admin', 'Read', 'Write'];
     }
 
     loggedIn() {
@@ -19,12 +20,16 @@ class MinervaClient {
         return this.apiFetch('GET', '/repository');
     }
 
+    getRepository(uuid) {
+        return this.apiFetch('GET', `/repository/${uuid}`);
+    }
+
     getImports(repositoryUuid) {
         return this.apiFetch('GET', '/repository/' + repositoryUuid + '/imports');
     }
 
     createRepository(data) {
-        return this.apiFetch('POST', '/repository', { data: data });
+        return this.apiFetch('POST', '/repository', { body: data });
     }
 
     deleteRepository(uuid) {
@@ -36,11 +41,11 @@ class MinervaClient {
     }
 
     createImport(data) {
-        return this.apiFetch('POST', '/import', { data: data });
+        return this.apiFetch('POST', '/import', { body: data });
     }
 
     updateImport(uuid, data) {
-        return this.apiFetch('PUT', '/import/' + uuid, { data: data });
+        return this.apiFetch('PUT', '/import/' + uuid, { body: data });
     }
 
     getImportCredentials(uuid) {
@@ -67,8 +72,35 @@ class MinervaClient {
         return this.apiFetch('GET', '/import/incomplete');
     }
 
+    listGrantsForRepository(uuid) {
+        return this.apiFetch('GET', `/repository/${uuid}/grants`);
+    }
+
+    findUser(search) {
+        return this.apiFetch('GET', `/user/find/${search}`);
+    }
+
+    findGroup(search) {
+        return this.apiFetch('GET', `/group/find/${search}`);
+    }
+
     getCognitoDetails() {
         return this.apiFetch('GET', '/cognito_details');
+    }
+
+    grantPermissionToRepository(userUuid, repositoryUuid, grantType) {
+        if (!this.GRANTS.includes(grantType)) {
+            console.error('Invalid grant: ', grantType);
+            return Promise.reject();
+        }
+        return this.apiFetch('POST', '/grant', {
+            body: {
+                "uuid": repositoryUuid,
+                "grantee": userUuid,
+                "resource": "repository",
+                "permissions": [grantType]
+            }
+        })
     }
 
     getImageTile(uuid, level, x, y, z = 0, t = 0) {
@@ -96,7 +128,15 @@ class MinervaClient {
         return this.apiFetch('GET', '/image/' + uuid + '/dimensions');
     }
 
+    deleteGrant(resourceUuid, subjectUuid) {
+        return this.apiFetch('DELETE', `/grant/resource/${resourceUuid}/subject/${subjectUuid}`);
+    }
+
     apiFetch(method, route, config = {}) {
+        if (!this.currentUser) {
+            console.warn("Tried to call apiFetch but no current session available.");
+            return Promise.reject();
+        }
         let params = config.params;
         let body = config.body;
         let binary = config.binary;
@@ -128,9 +168,16 @@ class MinervaClient {
         }
         return this.currentUser.getSession((err, session) => {
             if (!session.isValid()) {
-                this.currentUser.refreshSession(session.getRefreshToken(), (err, session) => {
-                    return this._fetch(url, args, session, headers, binary);
+                console.log('Cognito session is not valid');
+                if (err) {
+                    console.error(err);
+                }
+                return new Promise((resolve, reject) => {
+                    this.currentUser.refreshSession(session.getRefreshToken(), (err, session) => {
+                        resolve(this._fetch(url, args, session, headers, binary));
+                    });
                 });
+
             }
             return this._fetch(url, args, session, headers, binary);
         });
@@ -164,6 +211,10 @@ class MinervaClient {
     }
 
     getToken() {
+        if (!this.currentUser) {
+            return Promise.reject();
+        }
+
         return new Promise((resolve, reject) => {
             this.currentUser.getSession((err, session) => {
                 resolve('Bearer ' + session.idToken.jwtToken);

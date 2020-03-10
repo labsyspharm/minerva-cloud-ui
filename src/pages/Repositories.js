@@ -64,7 +64,6 @@ class Repositories extends React.Component {
         if (!this.props.loggedIn) {
             return null;
         }
-        let imageTitle = this.state.selected ? this.state.selected.data.name : '';
         return (
             <div className="row">
                 <div className="navigator">

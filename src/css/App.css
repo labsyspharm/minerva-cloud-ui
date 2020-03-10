@@ -67,3 +67,7 @@
   right: 0;
   font-size: 12px;
 }
+
+.container-fullheight {
+  min-height: 80vh;
+}

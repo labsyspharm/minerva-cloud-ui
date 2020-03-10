@@ -8,6 +8,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/js/bootstrap.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMicroscope } from '@fortawesome/free-solid-svg-icons'
+import RepositorySelect from '../components/RepositorySelect';
 
 const STATUS_INITIAL = 0;
 const STATUS_UPLOADING = 1;
@@ -29,13 +30,15 @@ class ImportTool extends React.Component {
             status: 0,
             repositories: [],
             repository: {},
-            newRepositoryName: ''
+            newRepositoryName: '',
+            repositoriesChanged: new Date()
         }
         this.newRepositoryName = React.createRef();
 
         this.onFileSelected = this.onFileSelected.bind(this);
         this.startImport = this.startImport.bind(this);
         this.createRepository = this.createRepository.bind(this);
+        this.repositorySelected = this.repositorySelected.bind(this);
 
         this.loadRepositories();
     }
@@ -50,6 +53,7 @@ class ImportTool extends React.Component {
 
     createRepository() {
         if (!this.newRepositoryName.current || !this.newRepositoryName.current.value) {
+            alertify.warning('Repository name is missing');
             return;
         }
         let raw_storage = "Destroy";
@@ -62,8 +66,9 @@ class ImportTool extends React.Component {
         }).then(response => {
             console.log(response);
             alertify.success("Repository " + this.newRepositoryName.current.value + " created", 2);
-            let repositories = this.state.repositories.concat([response['data']]);
-            this.setState({ repositories: repositories });
+            this.setState({repositoriesChanged: new Date()});
+        }).catch(err => {
+            alertify.error('Error in creating new Repository');
         });
     }
 
@@ -220,46 +225,52 @@ class ImportTool extends React.Component {
     }
 
     render() {
-        let repositoryText = 'Click to select';
-        if (this.state.repository.name) {
-            repositoryText = this.state.repository.name;
-        }
-        return (
-            <div className="container">
-                <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 className="h2">Import images</h1>
-                </div>
-                <div className="row">
-                <div className="col-9">
-                <div className="form-group">
-                    <input type="text" className="" id="repositoryName" name="newRepositoryName" ref={this.newRepositoryName} placeholder="Enter repository name" />&nbsp;
-                    <button type="button" className="btn btn-secondary" onClick={this.createRepository} >Create new</button>
-                </div>
 
-                <div className="row">
-                    <div className="col">
-                    <div className="dropdown">
-                        <label htmlFor="repositoryDropdown">Select repository:</label>
-                        <button className="form-control btn btn-secondary dropdown-toggle" type="button" id="repositoryDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            {repositoryText}
-                        </button>
-                        {this.renderRepositoryChoices()}
+        return (
+            <div className="container-fluid">
+                <div className="row mb-3 mt-3">
+                <div className="col-9 form-group container">
+                    <div className="row">
+                        <div className="col text-left">
+                            Step 1 - Create new repository<br/>(OPTIONAL)
+                        </div>
+                        <div className="col">
+                            <input type="text" className="" id="repositoryName" name="newRepositoryName" ref={this.newRepositoryName} placeholder="Enter repository name" />&nbsp;
+                            <button type="button" className="btn btn-secondary" onClick={this.createRepository} >Create new</button>
+                            &nbsp;
+                            <input type="checkbox" className="htmlForm-check-input" id="archive" name="archive" />
+                            <label className="form-check-label" htmlFor="exampleCheck1">Archive images</label>
+                        </div>
                     </div>
+
+                    <div className="row mb-3">
+                        <div className="col text-left">
+                            Step 2 - Select Repository
+                        </div>
+                        <div className="col">
+                            <div className="">
+                            <RepositorySelect onSelect={this.repositorySelected} repositoriesChanged={this.state.repositoriesChanged}/>
+                            </div>
+                        </div>
                     </div>
-                    <div className="col custom-file">
-                        <input className="custom-file-input" type="file" id="inputGroupFile01" onChange={this.onFileSelected} />
-                        <label className="custom-file-label" htmlFor="inputGroupFile01">Choose file</label>
+                    <div className="row">
+                        <div className="col text-left">
+                            Step 3 - Select image
+                        </div>
+                        <div className="col custom-file">
+                            <input className="custom-file-input" type="file" id="inputGroupFile01" onChange={this.onFileSelected} />
+                            <label className="custom-file-label" htmlFor="inputGroupFile01">Choose file</label>
+                        </div>
                     </div>
-                    <div className="col">
-                        <input type="checkbox" className="htmlForm-check-input" id="archive" name="archive" />
-                        <label className="form-check-label" htmlFor="exampleCheck1">Archive image</label>
+
+                    <div className="row mt-5">
+                        <div className="col text-left">
+                            Step 4 - Click Start
+                        </div>
+                        <div className="col">
+                            {this.renderSelectedFile()}
+                        </div>
                     </div>
-                </div>
-                <div className="row mt-5">
-                    <div className="col">
-                        {this.renderSelectedFile()}
-                    </div>
-                </div>
                 </div>
                 <div className="col-3 border-left">
                     <ActiveImports/>
@@ -269,16 +280,7 @@ class ImportTool extends React.Component {
         );
     }
 
-    renderRepositoryChoices() {
-        let choices = this.state.repositories.map((item, index) =>
-            <a className="dropdown-item" onClick={() => this.repositorySelected(item)} key={index}>{item.name}</a>
-        );
-        return (
-            <div className="dropdown-menu" aria-labelledby="repositoryDropdown">
-                {choices}
-            </div>
-        );
-    }
+
 
     repositorySelected(repository) {
         console.log('Selecting repository ', repository);

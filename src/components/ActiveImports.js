@@ -34,7 +34,7 @@ class ActiveImports extends React.Component {
     render() {
         return (
             <div>
-                <h4>Filesets importing</h4>
+                <h4>Fileset import status</h4>
                 {this.renderImports()}
             </div>
         );

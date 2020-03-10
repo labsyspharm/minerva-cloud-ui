@@ -26,6 +26,9 @@ class Header extends React.Component {
             <li className="nav-item">
               <Link className="nav-link" to="import">Import</Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="permissions">Permissions</Link>
+            </li>            
 
 
           </ul>

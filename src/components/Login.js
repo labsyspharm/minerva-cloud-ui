@@ -8,17 +8,17 @@ import {
 } from 'amazon-cognito-identity-js';
 import AppConfig from './../AppConfig';
 
-alertify.set('notifier','position', 'top-right');
+alertify.set('notifier', 'position', 'top-right');
 
 class Login extends React.Component {
     constructor(props) {
-      super(props);
-      let userPool = new CognitoUserPool({
-        UserPoolId : AppConfig.CognitoUserPoolId,
-        ClientId : AppConfig.CognitoClientId
-      });
+        super(props);
+        let userPool = new CognitoUserPool({
+            UserPoolId: AppConfig.CognitoUserPoolId,
+            ClientId: AppConfig.CognitoClientId
+        });
 
-      this.state = {
+        this.state = {
             cognitoUserPool: userPool,
             loggedIn: false,
             loggedInUser: null
@@ -31,7 +31,7 @@ class Login extends React.Component {
                     alert(err.message || JSON.stringify(err));
                     return;
                 }
-                props.loginSuccess(session.idToken.jwtToken, cognitoUser);
+                props.loginSuccess(cognitoUser);
                 let loggedInUser = localStorage.getItem('loggedInUser');
                 this.state.loggedInUser = loggedInUser;
                 this.state.loggedIn = true;
@@ -44,70 +44,98 @@ class Login extends React.Component {
 
     handleChange = evt => {
         const value =
-          evt.target.type === "checkbox" ? evt.target.checked : evt.target.value;
+            evt.target.type === "checkbox" ? evt.target.checked : evt.target.value;
         this.setState({
-          ...this.state,
-          [evt.target.name]: value
+            ...this.state,
+            [evt.target.name]: value
         });
-      }
+    }
 
     logout = () => {
-        this.setState({ loggedIn: false});
+        this.setState({ loggedIn: false });
         localStorage.removeItem('loggedInUser');
         let cognitoUser = this.state.cognitoUserPool.getCurrentUser();
         cognitoUser.signOut();
         this.props.logoutSuccess();
     }
-  
+
+    changePassword = (password, userAttributes, cognitoUser) => {
+        userAttributes.name = userAttributes.email;
+        userAttributes.preferred_username = userAttributes.name;
+        delete userAttributes.email_verified;
+        cognitoUser.completeNewPasswordChallenge(password, userAttributes, {
+            onSuccess: (data, cognitoUser) => this.passwordChallengeSuccess(data, cognitoUser),
+            onFailure: err => {
+                console.error(err);
+                alertify.error("Invalid password");
+            }
+          });
+    }
+
+    passwordChallengeSuccess(data, cognitoUser) {
+        this.setState({ loggedIn: true, loggedInUser: this.state.username });
+        localStorage.setItem('loggedInUser', this.state.username);
+        alertify.success("Login success", 2);
+        this.props.loginSuccess(cognitoUser);
+        console.log(data);
+    }
+
     login = () => {
-        let loginSuccess = this.props.loginSuccess;
         const cognitoUser = new CognitoUser({
-          Username: this.state.username,
-          Pool: this.state.cognitoUserPool
+            Username: this.state.username,
+            Pool: this.state.cognitoUserPool
         });
-    
+
         const authenticationDetails = new AuthenticationDetails({
-          Username: this.state.username,
-          Password: this.state.password
+            Username: this.state.username,
+            Password: this.state.password
         });
-    
+
         const auth = new Promise((resolve, reject) => {
             cognitoUser.authenticateUser(authenticationDetails, {
-              onSuccess: result => resolve(result),
-              onFailure: err => reject(err),
-              mfaRequired: codeDeliveryDetails => reject(codeDeliveryDetails),
-              newPasswordRequired: (fields, required) => reject({fields, required})
+                onSuccess: result => resolve(result),
+                onFailure: err => reject(err),
+                mfaRequired: codeDeliveryDetails => reject(codeDeliveryDetails),
+                newPasswordRequired: (fields, required) => reject({ fields, required })
             });
-          });
-    
+        });
+
         this._token = auth
-          .then(response => {
-              this.setState({ loggedIn: true, loggedInUser: this.state.username});
-              localStorage.setItem('loggedInUser', this.state.username);
-              alertify.success("Login success", 2);
-              loginSuccess(response.getIdToken().getJwtToken(), cognitoUser);
-          }).catch(err => {
-              console.error(err);
-              alertify.error("Invalid username or password.", 2);
-          });
-      }
-  
+            .then(response => {
+                this.setState({ loggedIn: true, loggedInUser: this.state.username });
+                localStorage.setItem('loggedInUser', this.state.username);
+                alertify.success("Login success", 2);
+                this.props.loginSuccess(cognitoUser);
+            }).catch(err => {
+                if (err.fields && err.required) {
+                    alertify.prompt('New password required', 'You are logging in for the first time. Please input your new password.', ''
+                        , (evt, password) => {
+                            this.changePassword(password, err.fields, cognitoUser);
+                        }, () => {
+                        });
+                } else {
+                    console.error(err);
+                    alertify.error("Invalid username or password.", 2);
+                }
+            });
+    }
+
     render() {
-      return (
-        <div>
-            { this.state.loggedIn ? 
-                this.renderUserInfo():
-                this.renderLoginForm()
-            }
-            
-        </div>
-      );
+        return (
+            <div>
+                {this.state.loggedIn ?
+                    this.renderUserInfo() :
+                    this.renderLoginForm()
+                }
+
+            </div>
+        );
     }
 
     renderLoginForm() {
         return (
             <form className="form-inline">
-            <input size="40" className="form-control-sm" type="text" name="username" onChange={this.handleChange} placeholder="username"></input>&nbsp;
+                <input size="40" className="form-control-sm" type="text" name="username" onChange={this.handleChange} placeholder="username"></input>&nbsp;
             <input className="form-control-sm" type="password" name="password" onChange={this.handleChange} placeholder="password"></input>&nbsp;
             <button className="btn btn-primary btn-sm" type="button" onClick={this.login}>Login</button>
             </form>
@@ -116,13 +144,13 @@ class Login extends React.Component {
 
     renderUserInfo() {
         return (
-        <form className="form-inline">
-            <span className="text-light">{this.state.loggedInUser}</span>&nbsp;
+            <form className="form-inline">
+                <span className="text-light">{this.state.loggedInUser}</span>&nbsp;
             <button className="btn btn-secondary btn-sm" type="button" onClick={this.logout}>Logout</button>
-        </form>
+            </form>
         );
     }
-  
+
 }
 
 export default Login;

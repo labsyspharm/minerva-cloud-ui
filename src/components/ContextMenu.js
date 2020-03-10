@@ -2,6 +2,7 @@ import React from 'react';
 import Client from '../MinervaClient';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
+import { navigate } from "@reach/router";
 
 class ContextMenu extends React.Component {
 
@@ -47,7 +48,6 @@ class ContextMenu extends React.Component {
             return (
                 <span>
                 <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'open')}>Open in Minerva Story</a>
-                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'permissions')}>Manage Permissions</a>
                 {this.renderDeletedOrRestore()}
                 </span>
             )
@@ -74,7 +74,7 @@ class ContextMenu extends React.Component {
         } else if (command === 'open') {
             alertify.warning('Not implemented yet');
         } else if (command === 'permissions') {
-            alertify.warning('Not implemented yet');
+            navigate(`/permissions/${this.props.node.uuid}`);
         }
         this.props.onClosed();
     }
