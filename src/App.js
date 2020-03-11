@@ -46,7 +46,7 @@ class App extends React.Component {
           <Permissions path="/permissions/:repositoryUuid" loggedIn={this.state.loggedIn} />
           <Permissions path="/permissions" loggedIn={this.state.loggedIn} />
         </Router>
-        <span className="copyright">©2020, Laboratory of Systems Pharmacology. All rights reserved.</span>
+        <footer className="copyright">©2020, Laboratory of Systems Pharmacology. All rights reserved.</footer>
       </div>
     );
   }

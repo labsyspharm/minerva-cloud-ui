@@ -3,8 +3,11 @@ import RepositorySelect from '../components/RepositorySelect';
 import UserGroupSelect from '../components/UserGroupSelect';
 import Client from '../MinervaClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMinus } from '@fortawesome/free-solid-svg-icons'
+import { faMinus, faUser, faUserShield, faPlus } from '@fortawesome/free-solid-svg-icons'
+import Spinner from '../components/Spinner';
 import '../css/Permissions.css';
+import alertify from 'alertifyjs';
+import 'alertifyjs/build/css/alertify.min.css';
 
 class Permissions extends React.Component {
 
@@ -15,7 +18,8 @@ class Permissions extends React.Component {
             grants: [],
             users: [],
             repository: null,
-            selectedUser: null
+            selectedUser: null,
+            loading: false
         }
 
         this.repositorySelected = this.repositorySelected.bind(this);
@@ -29,6 +33,9 @@ class Permissions extends React.Component {
     }
 
     repositorySelected(repository) {
+        if (this.state.repository && this.state.repository.uuid === repository.uuid) {
+            return;
+        }
         this.refreshGrants(repository);
     }
 
@@ -41,26 +48,33 @@ class Permissions extends React.Component {
             this.setState({selectedUser: null});
             return;
         }
-        if (!this.state.repository) {
-            console.warn('Repository not selected');
-            return;
-        }
         this.setState({selectedUser: userOrGroup});
     }
 
     addGrant(permission) {
+        if (!this.state.repository) {
+            console.warn('Repository not selected');
+            return;
+        }
         Client.grantPermissionToRepository(this.state.selectedUser.uuid, this.state.repository.uuid, permission).then(response => {
             console.log('Permission granted');
             this.refreshGrants(this.state.repository);
         }).catch(err => {
+            alertify.warning(err.message);
+            this.refreshGrants(this.state.repository);
             console.error(err);
         });
     }
 
     refreshGrants(repository) {
+        this.setState({loading: true});
         Client.listGrantsForRepository(repository.uuid).then(response => {
             console.log(response);
-            this.setState({grants: response.data, users: response.included.users, repository: repository, groups: response.included.groups})
+            this.setState({grants: response.data, 
+                users: response.included.users, 
+                repository: repository, 
+                groups: response.included.groups, 
+                loading: false})
         });
     }
 
@@ -79,11 +93,14 @@ class Permissions extends React.Component {
     }
 
     removeGrant(grant) {
-        console.log('Remove grant ', grant);
+        let grants = this.state.grants.filter((item) => {
+            return item.subject_uuid !== grant.subject_uuid || item.repository_uuid !== grant.repository_uuid;
+        });
+        this.setState({grants: grants});
+
         Client.deleteGrant(grant.repository_uuid, grant.subject_uuid).then(response => {
-            console.log('Removed grant');
-            this.refreshGrants(this.state.repository);
         }).catch(err => {
+            this.refreshGrants(this.state.repository);
             console.error(err);
         })
     }
@@ -91,6 +108,7 @@ class Permissions extends React.Component {
     render() {
         return (
             <div className="container mt-3">
+                <h5 className="h5">MANAGE PERMISSIONS</h5>
             <div className="row">
                 <div className="col col-3 mr-3">
                 <RepositorySelect onSelect={this.repositorySelected} />
@@ -110,8 +128,11 @@ class Permissions extends React.Component {
             return null;
         }
         return (
-            <div>
-                <div className="list-group">
+                <div className="list-group mt-3">
+                    <span className="list-group-item text-dark">
+                        <FontAwesomeIcon className="float-left text-success" icon={faPlus} size="lg"/>
+                        {this.state.selectedUser.name}
+                    </span>
                     <a href="#" className="list-group-item list-group-item-action text-dark userGroupItem" onClick={() => this.addGrant('Admin')}>
                         <span className="badge badge-primary">Admin</span>
                         <div>User/group is able to import, read and delete images.</div>
@@ -121,7 +142,6 @@ class Permissions extends React.Component {
                         <div>User/group is only able to read images.</div>
                     </a>
                 </div>
-            </div>
         )
     }
 
@@ -131,18 +151,20 @@ class Permissions extends React.Component {
         }
         return (
             <div>
-                <h2 className="h4">Permissions to "{this.state.repository.name}"</h2>
-            
+                <h2 className="h5">REPOSITORY: {this.state.repository.name}</h2>
             <ul className="list-group">
                 {this.state.grants.map((grant, key) => {
                     let badgeClass = 'badge badge-pill';
+                    let icon = faUser;
                     if (grant.permission == 'Admin') {
                         badgeClass += ' badge-primary';
+                        icon = faUserShield;
                     } else if (grant.permission == 'Read') {
                         badgeClass += ' badge-secondary';
                     }
                     return (
                         <li className="list-group-item text-dark" key={key}>
+                            <FontAwesomeIcon className="float-left" size="lg" icon={icon} />
                             {this.getUsername(grant.subject_uuid)} <span className={badgeClass}>{grant.permission}</span>
                             &nbsp;
                             <button type="button" className="btn btn-danger btn-sm float-right" onClick={() => this.removeGrant(grant)}>
@@ -152,6 +174,7 @@ class Permissions extends React.Component {
                     )
                 })}
             </ul>
+            <Spinner show={this.state.loading} />
             </div>
         );
     }

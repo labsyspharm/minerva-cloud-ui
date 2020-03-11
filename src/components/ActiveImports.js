@@ -42,7 +42,7 @@ class ActiveImports extends React.Component {
 
     renderImports() {
         let filesets = this.state.filesets.map((fileset) =>
-            <li className="list-group-item" key={fileset.uuid}>{fileset.name} {fileset.progress}% <progress id="file" max="100" value={fileset.progress}></progress></li>
+            <li className="list-group-item bg-dark" key={fileset.uuid}>{fileset.name} {fileset.progress}% <progress id="file" max="100" value={fileset.progress}></progress></li>
         );
         return (
             <ul className="list-group">

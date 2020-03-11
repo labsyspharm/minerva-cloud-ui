@@ -67,7 +67,7 @@ class Repositories extends React.Component {
         return (
             <div className="row">
                 <div className="navigator">
-                    <h5 className="h5">EXPLORE</h5>
+                    <h5 className="h5 text-left">REPOSITORIES</h5>
                     <RepositoryTree onSelect={this.select} refresh={this.props.refresh}/>
                 </div>
                 <div className="viewer overflow-hidden">

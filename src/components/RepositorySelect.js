@@ -1,5 +1,7 @@
 import React from 'react';
 import Client from '../MinervaClient';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDatabase } from '@fortawesome/free-solid-svg-icons'
 
 class RepositorySelect extends React.Component {
 
@@ -30,7 +32,7 @@ class RepositorySelect extends React.Component {
     }
 
     render() {
-        let repositoryText = 'Click to select';
+        let repositoryText = 'Select Repository';
         if (this.state.repository) {
             repositoryText = this.state.repository.name;
         }
@@ -38,7 +40,6 @@ class RepositorySelect extends React.Component {
         return (
             <div className="dropdown">
                 {this.state.repositoriesChanged}
-                <label htmlFor="repositoryDropdown">Select repository:</label>
                 <button className="form-control btn btn-secondary dropdown-toggle" type="button" id="repositoryDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     {repositoryText}
                 </button>
@@ -49,7 +50,10 @@ class RepositorySelect extends React.Component {
 
     renderRepositoryChoices() {
         let choices = this.state.repositories.map((item, index) =>
-            <a href="#" className="dropdown-item" onClick={() => this.selectRepository(item)} key={index}>{item.name}</a>
+            <a href="#" className="dropdown-item" onClick={() => this.selectRepository(item)} key={index}>
+                <FontAwesomeIcon className="mr-2" icon={faDatabase} />
+                {item.name}
+            </a>
         );
         return (
             <div className="dropdown-menu" aria-labelledby="repositoryDropdown">

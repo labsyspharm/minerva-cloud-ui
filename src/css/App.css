@@ -63,7 +63,7 @@
 
 .copyright {
   position: fixed;
-  bottom: 0;
+  bottom: 10px;
   right: 0;
   font-size: 12px;
 }

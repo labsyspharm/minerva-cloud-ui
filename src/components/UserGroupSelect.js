@@ -1,7 +1,8 @@
 import React from 'react';
 import Client from '../MinervaClient';
+import Spinner from './Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser, faUsers, faAngleDoubleDown } from '@fortawesome/free-solid-svg-icons'
+import { faUser, faUsers, faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 class UserGroupSelect extends React.Component {
 
@@ -11,12 +12,15 @@ class UserGroupSelect extends React.Component {
         this.state = {
             users: [],
             groups: [],
-            selected: null
+            selected: null,
+            spinner: null
         }
 
         this.findUsers = this.findUsers.bind(this);
         this.findGroups = this.findGroups.bind(this);
         this.find = this.find.bind(this);
+
+        this.findTimeout = null;
     }
 
     find(e) {
@@ -26,12 +30,24 @@ class UserGroupSelect extends React.Component {
             this.props.onSelect(null);
             return;
         }
-        this.findUsers(search);
-        this.findGroups(search);
+
+        if (this.findTimeout) {
+            clearTimeout(this.findTimeout);
+        }
+        let timeoutMs = 300;
+        if (search.length === 3) {
+            timeoutMs = 0;
+        }
+        this.findTimeout = setTimeout(() => {
+            this.findUsers(search);
+            this.findGroups(search);
+        }, timeoutMs);
     }
 
     findUsers(search) {
+        this.displaySpinner(true);
         Client.findUser(search).then(response => {
+            this.displaySpinner(false);
             this.setState({users: response.data});
         });
     }
@@ -42,43 +58,47 @@ class UserGroupSelect extends React.Component {
         });
     }
 
+    displaySpinner(value) {
+        this.setState({spinner: value});
+    }
+
     render() {
         return (
-            <div>
-                <label htmlFor="userAutocomplete">Type user or group name:</label>
-                <input size="40" className="form-control-sm" id="userAutocomplete" type="text" name="username" onChange={this.find} placeholder="username" autoComplete="off"></input>&nbsp;
+            <div className="text-center">
+                <label htmlFor="userAutocomplete">
+                    Type user or group name:
+                </label>
+                <input className="form-control" id="userAutocomplete" type="text" name="username" onChange={this.find} placeholder="user or group" autoComplete="off"></input>
                 {this.renderUsers()}
+                <div className="text-center mt-1">
+                    <Spinner show={this.state.spinner} />
+                </div>
+
             </div>
         );
     }
 
     renderUsers() {
         return (
-            <ul className="list-group">
+            <div className="list-group">
                 {this.state.groups.map((group, key) => {
                     return (
-                        <li className="list-group-item text-dark" key={key}>
+                        <a href="#" className="list-group-item list-group-item-action text-dark" onClick={() => this.props.onSelect(group, 'group')} key={key}>
                             <FontAwesomeIcon className="float-left" size="lg" icon={faUsers} />&nbsp;
-                            {group.name}&nbsp;
-                            <button type="button" className="btn btn-primary btn-sm float-right" onClick={() => this.props.onSelect(group, 'group')}>
-                                <FontAwesomeIcon icon={faAngleDoubleDown} />
-                            </button>
-                        </li>
+                            {group.name}
+                        </a>
                     );
                 })}
 
                 {this.state.users.map((user, key) => {
                     return (
-                        <li className="list-group-item text-dark" key={key}>
+                        <a href="#" className="list-group-item list-group-item-action text-dark" onClick={() => this.props.onSelect(user, 'user')} key={key}>
                             <FontAwesomeIcon className="float-left" size="lg" icon={faUser} />&nbsp;
                             {user.name}
-                            <button type="button" className="btn btn-success btn-sm float-right" onClick={() => this.props.onSelect(user, 'user')}>
-                                <FontAwesomeIcon icon={faAngleDoubleDown} />
-                            </button>
-                        </li>
+                        </a>
                     );
                 })}
-            </ul>
+            </div>
 
         );
     }

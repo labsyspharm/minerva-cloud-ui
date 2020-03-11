@@ -1,7 +1,8 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faSpinner, faDatabase, faImage } from '@fortawesome/free-solid-svg-icons'
 import ContextMenu from './ContextMenu';
+import Spinner from './Spinner';
 
 class TreeNode extends React.Component {
 
@@ -42,13 +43,26 @@ class TreeNode extends React.Component {
         let nodeType = this.props.node.type.charAt(0).toUpperCase();
         return (
             <li ref={this.ref} className={liClass} onClick={(evt) => this.onClick(this.props.node, evt)} onContextMenu={(evt) => this.openContextMenu(this.props.node, evt)}>
-                <span className={badgeClass}>{nodeType}</span>&nbsp;{this.props.node.title}
+                {this.renderIcon()}&nbsp;
+                {this.props.node.title}
                 &nbsp;
-               {this.state.loading ? <FontAwesomeIcon icon={faSpinner} spin></FontAwesomeIcon> : null}
+                <Spinner show={this.state.loading} />
     
                 {this.loop(this.props.node.children)}
             </li>
         );
+    }
+
+    renderIcon() {
+        if (this.props.node.type == 'repository') {
+            return (
+                <FontAwesomeIcon icon={faDatabase}></FontAwesomeIcon>
+            )
+        } else {
+            return (
+                <FontAwesomeIcon icon={faImage}></FontAwesomeIcon>
+            )
+        }
     }
 
     renderContextMenu() {

@@ -167,19 +167,25 @@ class MinervaClient {
             args['body'] = JSON.stringify(body)
         }
         return this.currentUser.getSession((err, session) => {
+            if (err) {
+                console.error(err);
+            }
+            return this._fetch(url, args, session, headers, binary);
+            
+            /*
             if (!session.isValid()) {
                 console.log('Cognito session is not valid');
                 if (err) {
                     console.error(err);
                 }
                 return new Promise((resolve, reject) => {
-                    this.currentUser.refreshSession(session.getRefreshToken(), (err, session) => {
+                    return this.currentUser.refreshSession(session.getRefreshToken(), (err, session) => {
                         resolve(this._fetch(url, args, session, headers, binary));
                     });
                 });
 
             }
-            return this._fetch(url, args, session, headers, binary);
+            return this._fetch(url, args, session, headers, binary);*/
         });
     }
 
@@ -190,8 +196,10 @@ class MinervaClient {
             if (!response.ok) {
                 return response.text()
                     .then(text => {
-                        return Promise.reject('Error ' + response.status + ' ('
-                            + response.statusText + '): ' + text);
+                        return Promise.reject({
+                            status: response.status,
+                            message: text
+                        });
                     });
             }
 
@@ -206,7 +214,7 @@ class MinervaClient {
             }
         }).catch(err => {
             console.error(err);
-            return Promise.reject();
+            return Promise.reject(err);
         });
     }
 

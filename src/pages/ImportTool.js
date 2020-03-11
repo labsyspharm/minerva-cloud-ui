@@ -9,6 +9,7 @@ import 'bootstrap/dist/js/bootstrap.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMicroscope } from '@fortawesome/free-solid-svg-icons'
 import RepositorySelect from '../components/RepositorySelect';
+import '../css/ImportTool.css';
 
 const STATUS_INITIAL = 0;
 const STATUS_UPLOADING = 1;
@@ -105,7 +106,8 @@ class ImportTool extends React.Component {
 
     startImport() {
         console.log('Starting import');
-        if (!this.state.selectedFile || !this.state.repository.uuid) {
+        if (!this.state.repository.uuid) {
+            alertify.warning('Select a repository first');
             return;
         }
         let importDate = new Date().toISOString();
@@ -214,6 +216,9 @@ class ImportTool extends React.Component {
                     this.setState({ status: STATUS_EXTRACTING });
                 }
                 let progress = filesets[0].progress;
+                if (!progress) {
+                    progress = 0;
+                }
                 this.setState({ extractProgress: progress });
 
                 if (filesets[0].complete) {
@@ -227,36 +232,40 @@ class ImportTool extends React.Component {
     render() {
 
         return (
-            <div className="container-fluid">
+            <div className="container">
+                <div className="importHelpBox text-left">
+                    <ol>
+                        <li>Create new repository (optional)</li>
+                        <li>Select Repository</li>
+                        <li>Select image</li>
+                        <li>Click Start Import</li>
+                    </ol>
+                </div>
                 <div className="row mb-3 mt-3">
-                <div className="col-9 form-group container">
+                <div className="col-6 form-group container">
                     <div className="row">
-                        <div className="col text-left">
-                            Step 1 - Create new repository<br/>(OPTIONAL)
-                        </div>
                         <div className="col">
-                            <input type="text" className="" id="repositoryName" name="newRepositoryName" ref={this.newRepositoryName} placeholder="Enter repository name" />&nbsp;
-                            <button type="button" className="btn btn-secondary" onClick={this.createRepository} >Create new</button>
-                            &nbsp;
-                            <input type="checkbox" className="htmlForm-check-input" id="archive" name="archive" />
-                            <label className="form-check-label" htmlFor="exampleCheck1">Archive images</label>
+                            <div className="card bg-dark">
+                                <div className="card-body">
+                                <h5 class="card-title">Create new Repository</h5>
+                                <input type="text" className="" id="repositoryName" name="newRepositoryName" ref={this.newRepositoryName} placeholder="Enter repository name" />&nbsp;
+                                <button type="button" className="btn btn-success" onClick={this.createRepository}>Create</button>
+                                <br/>
+                                <input type="checkbox" className="htmlForm-check-input" id="archive" name="archive" />
+                                <label className="form-check-label" htmlFor="exampleCheck1">Archive raw images</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div className="row mb-3">
-                        <div className="col text-left">
-                            Step 2 - Select Repository
-                        </div>
                         <div className="col">
-                            <div className="">
+                            <div className="mt-3">
                             <RepositorySelect onSelect={this.repositorySelected} repositoriesChanged={this.state.repositoriesChanged}/>
                             </div>
                         </div>
                     </div>
                     <div className="row">
-                        <div className="col text-left">
-                            Step 3 - Select image
-                        </div>
                         <div className="col custom-file">
                             <input className="custom-file-input" type="file" id="inputGroupFile01" onChange={this.onFileSelected} />
                             <label className="custom-file-label" htmlFor="inputGroupFile01">Choose file</label>
@@ -264,9 +273,7 @@ class ImportTool extends React.Component {
                     </div>
 
                     <div className="row mt-5">
-                        <div className="col text-left">
-                            Step 4 - Click Start
-                        </div>
+
                         <div className="col">
                             {this.renderSelectedFile()}
                         </div>
@@ -316,10 +323,16 @@ class ImportTool extends React.Component {
             extractingStatusText = 'Extracting finished';
             finishedStatusText = 'Import finished!';
         }
+        let omeTif = this.state.selectedFile.name.indexOf('.ome.tif') !== -1;
+        let rareCyte = this.state.selectedFile.name.indexOf('.rcpnl') !== -1;
         return (
             <div className="card bg-dark">
                 <div className="card-body">
-                    <h5 className="card-title">{this.state.selectedFile.name}&nbsp;<FontAwesomeIcon icon={faMicroscope} /></h5>
+                    <h5 className="card-title">{this.state.selectedFile.name}</h5>
+                    <p>
+                    { rareCyte ? <FontAwesomeIcon icon={faMicroscope}/> : null}
+                    { omeTif ? <img className="fileIcon" src="ome.svg"/> : null}
+                    </p>
                     <p>{this.state.selectedFile.sizeReadable}</p>
                     <p><strong>{uploadStatusText}</strong></p>
                     <p><strong>{syncingStatusText}</strong></p>

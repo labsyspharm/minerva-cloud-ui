@@ -1,0 +1,10 @@
+.importHelpBox {
+    position: fixed;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.fileIcon {
+    width: 6rem;
+    height: 6rem;
+}
