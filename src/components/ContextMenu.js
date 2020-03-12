@@ -3,6 +3,8 @@ import Client from '../MinervaClient';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
 import { navigate } from "@reach/router";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash, faFolderOpen, faUserCog, faTrashRestore } from '@fortawesome/free-solid-svg-icons'
 
 class ContextMenu extends React.Component {
 
@@ -36,7 +38,10 @@ class ContextMenu extends React.Component {
         if (nodeType == 'repository') {
             return (
                 <span>
-                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'permissions')}>Manage Permissions</a>
+                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'permissions')}>
+                    <FontAwesomeIcon className="mr-2" icon={faUserCog}/>
+                    Manage Permissions
+                </a>
                 </span>
             )
         } else if (nodeType == 'fileset') {
@@ -47,7 +52,10 @@ class ContextMenu extends React.Component {
         else if (nodeType == 'image') {
             return (
                 <span>
-                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'open')}>Open in Minerva Story</a>
+                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'open')}>
+                    <FontAwesomeIcon className="mr-2" icon={faFolderOpen}/>
+                    Open in Minerva Story
+                </a>
                 {this.renderDeletedOrRestore()}
                 </span>
             )
@@ -56,9 +64,15 @@ class ContextMenu extends React.Component {
 
     renderDeletedOrRestore() {
         if (!this.props.node.deleted) {
-            return (<a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'delete')}>Delete</a>);
+            return (<a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'delete')}>
+                <FontAwesomeIcon className="mr-2" icon={faTrash}/>
+                Delete
+                </a>);
         } else {
-            return (<a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'restore')}>Restore</a>);
+            return (<a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'restore')}>
+                <FontAwesomeIcon className="mr-2" icon={faTrashRestore}/>
+                Restore
+            </a>);
         }
     }
 
@@ -86,6 +100,8 @@ class ContextMenu extends React.Component {
                 if (node.type === 'image') {
                     Client.deleteImage(node.uuid).then(() => {
                         this.props.onDeleted(node);
+                    }).catch(err => {
+                        alertify.error(err.message);
                     });
                 }
             },

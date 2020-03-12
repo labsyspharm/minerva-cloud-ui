@@ -1,6 +1,7 @@
 .importHelpBox {
+    max-width: 20vw;
     position: fixed;
-    left: 0;
+    left: 10px;
     background-color: rgba(0, 0, 0, 0.5);
 }
 

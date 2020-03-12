@@ -21,11 +21,13 @@ class OSDViewer extends React.Component {
                 element: this.osdRef.current,
                 prefixUrl: 'https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.3.1/images/',
                 navigatorPosition: 'BOTTOM_RIGHT',
+                showZoomControl: true,
+                showHomeControl: true,
                 zoomOutButton: 'zoom-out',
                 zoomInButton: 'zoom-in',
                 immediateRender: true,
                 maxZoomPixelRatio: 10,
-                visibilityRatio: .9
+                visibilityRatio: .75
             });
             this.setState({ viewer: viewer });
         }
@@ -34,11 +36,15 @@ class OSDViewer extends React.Component {
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (this.props.metadata) {
-            this.createTileSource();
+            let imageChanged = false;
+            if (prevProps.metadata && prevProps.metadata.image_uuid !== this.props.metadata.image_uuid) {
+                imageChanged = true;
+            }
+            this.createTileSource(imageChanged);
         }
     }
 
-    createTileSource() {
+    createTileSource(clear=false) {
         Client.getToken().then(token => {
             let headers = {
                 'Content-Type': 'application/json',
@@ -46,6 +52,10 @@ class OSDViewer extends React.Component {
                 'Accept': 'image/jpeg'
             };
             let getTileFunction = this.props.metadata.renderingSettingsUuid ? this.prerenderedTile : this.renderTile;
+            if (clear) {
+                this.state.viewer.world.removeAll();
+            }
+            
             this.state.viewer.addTiledImage({
                 loadTilesWithAjax: true,
                 crossOriginPolicy: 'Anonymous',

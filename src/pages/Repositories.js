@@ -8,6 +8,7 @@ import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
 import ImageMetadata from '../components/ImageMetadata';
 import OSDViewer from '../components/OSDViewer';
+import NotLoggedIn from '../components/NotLoggedIn';
 
 class Repositories extends React.Component {
     constructor(props) {
@@ -29,6 +30,7 @@ class Repositories extends React.Component {
     select(node) {
         this.setState({ selected: node });
         let image = node.data;
+        console.log('Image: ', image);
         this.setState({previewSpinner: true});
         let getImageResponse = Client.getImage(node.uuid);
         let getImageDimensionsResponse = Client.getImageDimensions(node.uuid);
@@ -62,7 +64,9 @@ class Repositories extends React.Component {
 
     render() {
         if (!this.props.loggedIn) {
-            return null;
+            return (
+                <NotLoggedIn/>
+            );
         }
         return (
             <div className="row">
@@ -79,8 +83,8 @@ class Repositories extends React.Component {
                     <h5 className="h5">METADATA</h5>
                     <ImageMetadata metadata={this.state.imageDetails} image={this.state.selected} />
                     <hr/>
-                    <h5 className="h5">CHANNEL GROUPS</h5>
-                    <ChannelGroups groups={this.state.channelGroups} onChannelGroupSelected={this.selectChannelGroup}/>
+                    
+                    <ChannelGroups groups={this.state.channelGroups} onChannelGroupSelected={this.selectChannelGroup} node={this.state.selected}/>
                 </div>
             </div>
 

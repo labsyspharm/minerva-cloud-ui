@@ -71,3 +71,17 @@
 .container-fullheight {
   min-height: 80vh;
 }
+
+.modal-backdrop {
+  /* bug fix - no overlay */    
+  display: none;    
+}
+
+.modal {
+  background: rgba(0,0,0,0.5);
+}
+
+.notLoggedIn {
+  margin: auto;
+  margin-top: 30px;
+}

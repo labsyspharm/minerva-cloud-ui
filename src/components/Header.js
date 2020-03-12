@@ -1,11 +1,14 @@
 import React from 'react';
-import Login from './Login';
+import UserInfo from './UserInfo';
 import { Link } from "@reach/router";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 class Header extends React.Component {
 
   render() {
+    if (!this.props.loggedIn) {
+      return null;
+    }
     return (
       <nav className="navbar navbar-expand-lg navbar-dark primary-color bg-dark header">
 
@@ -32,7 +35,7 @@ class Header extends React.Component {
 
 
           </ul>
-          <Login loginSuccess={this.props.loginSuccess} logoutSuccess={this.props.logoutSuccess} />
+          { this.props.loggedIn ? <UserInfo logoutSuccess={this.props.logoutSuccess} loggedInUser={this.props.loggedInUser} /> : null }
 
         </div>
 

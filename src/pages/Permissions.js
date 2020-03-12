@@ -8,6 +8,7 @@ import Spinner from '../components/Spinner';
 import '../css/Permissions.css';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
+import NotLoggedIn from '../components/NotLoggedIn';
 
 class Permissions extends React.Component {
 
@@ -26,6 +27,7 @@ class Permissions extends React.Component {
         this.userOrGroupSelected = this.userOrGroupSelected.bind(this);
 
         if (this.props.repositoryUuid) {
+            this.state.loading = true;
             Client.getRepository(this.props.repositoryUuid).then(response => {
                 this.repositorySelected(response.data);
             });
@@ -60,7 +62,11 @@ class Permissions extends React.Component {
             console.log('Permission granted');
             this.refreshGrants(this.state.repository);
         }).catch(err => {
-            alertify.warning(err.message);
+            if (err.status == 403) {
+                alertify.error("Only repository Admins can add permissions");
+            } else {
+                alertify.error(err.message);
+            }
             this.refreshGrants(this.state.repository);
             console.error(err);
         });
@@ -100,12 +106,22 @@ class Permissions extends React.Component {
 
         Client.deleteGrant(grant.repository_uuid, grant.subject_uuid).then(response => {
         }).catch(err => {
+            if (err.status == 403) {
+                alertify.error("Only repository Admins can remove permissions");
+            } else {
+                alertify.error(err.message);
+            }
             this.refreshGrants(this.state.repository);
             console.error(err);
         })
     }
 
     render() {
+        if (!this.props.loggedIn) {
+            return (
+                <NotLoggedIn/>
+            );
+        }
         return (
             <div className="container mt-3">
                 <h5 className="h5">MANAGE PERMISSIONS</h5>

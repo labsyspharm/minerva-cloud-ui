@@ -132,6 +132,10 @@ class MinervaClient {
         return this.apiFetch('DELETE', `/grant/resource/${resourceUuid}/subject/${subjectUuid}`);
     }
 
+    createRenderingSettings(uuid, json) {
+        return this.apiFetch('POST', `/image/${uuid}/rendering_settings`, { body: json });
+    }
+
     apiFetch(method, route, config = {}) {
         if (!this.currentUser) {
             console.warn("Tried to call apiFetch but no current session available.");
@@ -171,21 +175,6 @@ class MinervaClient {
                 console.error(err);
             }
             return this._fetch(url, args, session, headers, binary);
-            
-            /*
-            if (!session.isValid()) {
-                console.log('Cognito session is not valid');
-                if (err) {
-                    console.error(err);
-                }
-                return new Promise((resolve, reject) => {
-                    return this.currentUser.refreshSession(session.getRefreshToken(), (err, session) => {
-                        resolve(this._fetch(url, args, session, headers, binary));
-                    });
-                });
-
-            }
-            return this._fetch(url, args, session, headers, binary);*/
         });
     }
 

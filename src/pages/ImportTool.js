@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMicroscope } from '@fortawesome/free-solid-svg-icons'
 import RepositorySelect from '../components/RepositorySelect';
 import '../css/ImportTool.css';
+import NotLoggedIn from '../components/NotLoggedIn';
 
 const STATUS_INITIAL = 0;
 const STATUS_UPLOADING = 1;
@@ -31,10 +32,10 @@ class ImportTool extends React.Component {
             status: 0,
             repositories: [],
             repository: {},
-            newRepositoryName: '',
-            repositoriesChanged: new Date()
+            newRepositoryName: ''
         }
         this.newRepositoryName = React.createRef();
+        this.selectRepositoryRef = React.createRef();
 
         this.onFileSelected = this.onFileSelected.bind(this);
         this.startImport = this.startImport.bind(this);
@@ -66,10 +67,10 @@ class ImportTool extends React.Component {
             'raw_storage': raw_storage
         }).then(response => {
             console.log(response);
-            alertify.success("Repository " + this.newRepositoryName.current.value + " created", 2);
-            this.setState({repositoriesChanged: new Date()});
+            alertify.success("Repository " + this.newRepositoryName.current.value + " created.", 2);
+            this.selectRepositoryRef.current.refresh();
         }).catch(err => {
-            alertify.error('Error in creating new Repository');
+            alertify.error('Error in creating new Repository. Check that repository name does not already exist.');
         });
     }
 
@@ -126,6 +127,12 @@ class ImportTool extends React.Component {
         })
         .catch((err) => {
             console.error(err);
+            if (err.status == 403) {
+                alertify.error('You don\'t have write permission to selected repository.');
+            } else {
+                alertify.error(err.message);
+            }
+            throw err;
         });
 
         let importUuid = null;
@@ -141,6 +148,7 @@ class ImportTool extends React.Component {
             })
             .catch(err => {
                 console.error(err);
+                throw err;
             });
 
         importCredentials.then(response => {
@@ -230,17 +238,15 @@ class ImportTool extends React.Component {
     }
 
     render() {
-
+        if (!this.props.loggedIn) {
+            return (
+                <NotLoggedIn/>
+            );
+        }
         return (
             <div className="container">
-                <div className="importHelpBox text-left">
-                    <ol>
-                        <li>Create new repository (optional)</li>
-                        <li>Select Repository</li>
-                        <li>Select image</li>
-                        <li>Click Start Import</li>
-                    </ol>
-                </div>
+                {this.renderHelp()}
+
                 <div className="row mb-3 mt-3">
                 <div className="col-6 form-group container">
                     <div className="row">
@@ -261,14 +267,14 @@ class ImportTool extends React.Component {
                     <div className="row mb-3">
                         <div className="col">
                             <div className="mt-3">
-                            <RepositorySelect onSelect={this.repositorySelected} repositoriesChanged={this.state.repositoriesChanged}/>
+                            <RepositorySelect ref={this.selectRepositoryRef} onSelect={this.repositorySelected} />
                             </div>
                         </div>
                     </div>
                     <div className="row">
                         <div className="col custom-file">
                             <input className="custom-file-input" type="file" id="inputGroupFile01" onChange={this.onFileSelected} />
-                            <label className="custom-file-label" htmlFor="inputGroupFile01">Choose file</label>
+                            <label className="custom-file-label" htmlFor="inputGroupFile01">Select file</label>
                         </div>
                     </div>
 
@@ -306,6 +312,7 @@ class ImportTool extends React.Component {
         if (this.state.status === STATUS_UPLOADING) {
             uploadStatusText = this.state.progress + '%';
             uploadStatusText = 'Uploading file ' + uploadStatusText;
+            syncingStatusText = 'Don\'t close browser!';
         }
         if (this.state.status === STATUS_SYNCING) {
             uploadStatusText = 'Uploading finished';
@@ -339,9 +346,30 @@ class ImportTool extends React.Component {
                     <p><strong>{extractingStatusText}</strong></p>
                     <p><strong>{finishedStatusText}</strong></p>
                 </div>
-                <button type="button" className="btn btn-primary" disabled={this.state.uploading} onClick={this.startImport}>Start import</button>
+                { this.state.status === STATUS_INITIAL ? 
+                    <button type="button" className="btn btn-primary" disabled={this.state.status === STATUS_UPLOADING} onClick={this.startImport}>Start import</button>
+                    :
+                    <span className="btn btn-success">Processing import...</span>
+                }
 
             </div>
+        );
+    }
+
+    renderHelp() {
+        return (
+            <div className="importHelpBox text-left">
+            <dl>
+                <dt>Create new repository</dt>
+                <dd>Alternatively use a pre-existing one</dd>
+                <dt>Select Repository</dt>
+                <dd>Image will be imported to this repository</dd>
+                <dt>Select image</dt>
+                <dd>Supported files are BioFormats-compatible formats such as .ome.tif or .rcpnl</dd>
+                <dt>Click Start Import</dt>
+                <dd>Don't close browser while uploading file. It's safe to close the browser after the upload has completed.</dd>
+            </dl>
+        </div>
         );
     }
 }

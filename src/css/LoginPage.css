@@ -1,0 +1,24 @@
+.loginContainer {
+    padding: 20px;
+    background: #343a40;
+    margin: auto;
+    border-radius: 5px;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translateX(-50%) translateY(-50%);
+    -webkit-transform: translate(-50%,-50%);
+    transform: translate(-50%,-50%);
+
+    transition: width 2s;
+    transition: height 2s;
+  	
+	margin: auto;
+}
+
+.loginForm {
+    margin: auto;
+    width: 50%;
+    min-width: 300px;
+}
