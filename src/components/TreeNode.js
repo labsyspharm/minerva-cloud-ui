@@ -29,7 +29,7 @@ class TreeNode extends React.Component {
                 </span>
             )
         }
-        let liClass = 'list-group-flush list-group-item treeNode treeNodeLevel' + this.props.node.level;
+        let liClass = 'list-group-flush list-group-item border-0 treeNode treeNodeLevel' + this.props.node.level;
         if (this.props.node.leaf) {
             liClass += ' treeNodeLeaf list-group-flush';
         }
