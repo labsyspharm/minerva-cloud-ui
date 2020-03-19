@@ -27,6 +27,9 @@ Your app is ready to be deployed!
 
 ### `npm run deploy-demo`
 
-Deploys the app to S3 demo bucket "minerva-admin-demo".
+Deploys the built app to S3 demo bucket "minerva-admin-demo".
 
 Requires that aws command line tools are installed and configured.
+
+Demo environment is accessible from url:
+http://minerva-admin-demo.s3-website-us-east-1.amazonaws.com/

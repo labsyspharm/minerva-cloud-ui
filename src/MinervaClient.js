@@ -196,7 +196,6 @@ class MinervaClient {
                 return Promise.resolve();
             }
             else if (!binary) {
-                console.log(response);
                 return response.json();
             } else {
                 return response.blob();

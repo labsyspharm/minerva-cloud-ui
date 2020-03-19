@@ -42,6 +42,7 @@ class RepositoryTree extends Component {
                     uuid: repo.uuid,
                     key: repo.uuid,
                     title: repo.name,
+                    data: repo,
                     isLeaf: false,
                     description: 'Repository',
                     level: 1,

@@ -27,7 +27,7 @@ class OSDViewer extends React.Component {
                 zoomInButton: 'zoom-in',
                 immediateRender: true,
                 maxZoomPixelRatio: 10,
-                visibilityRatio: .75
+                visibilityRatio: 0.75
             });
             this.setState({ viewer: viewer });
         }

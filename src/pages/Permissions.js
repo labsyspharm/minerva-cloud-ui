@@ -3,12 +3,11 @@ import RepositorySelect from '../components/RepositorySelect';
 import UserGroupSelect from '../components/UserGroupSelect';
 import Client from '../MinervaClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMinus, faUser, faUserShield, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faMinus, faUser, faUserShield, faPlus, faLock, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons'
 import Spinner from '../components/Spinner';
 import '../css/Permissions.css';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
-import NotLoggedIn from '../components/NotLoggedIn';
 
 class Permissions extends React.Component {
 
@@ -21,15 +20,20 @@ class Permissions extends React.Component {
             repository: null,
             selectedUser: null,
             loading: false
-        }
+        };
 
         this.repositorySelected = this.repositorySelected.bind(this);
         this.userOrGroupSelected = this.userOrGroupSelected.bind(this);
+        this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
 
+        this.repositorySelect = React.createRef();
+    }
+
+    componentDidMount() {
         if (this.props.repositoryUuid) {
             this.state.loading = true;
             Client.getRepository(this.props.repositoryUuid).then(response => {
-                this.repositorySelected(response.data);
+                this.repositorySelect.current.selectRepository(response.data);
             });
         }
     }
@@ -80,7 +84,7 @@ class Permissions extends React.Component {
                 users: response.included.users, 
                 repository: repository, 
                 groups: response.included.groups, 
-                loading: false})
+                loading: false});
         });
     }
 
@@ -98,6 +102,22 @@ class Permissions extends React.Component {
         return 'unnamed';
     }
 
+    handleVisibilityChange(evt) {
+        console.log(evt.target.value);
+        let repository = this.state.repository;
+        if (evt.target.value === 'public') {
+            alertify.confirm('Confirmation', 'Are you sure you want to make the repository Public?',
+            () => {
+                repository.public = true;
+            }, () => {});
+            
+        } else {
+            repository.public = false;
+        }
+        this.setState({repository: repository});
+        // TODO - save in backend
+    }
+
     removeGrant(grant) {
         let grants = this.state.grants.filter((item) => {
             return item.subject_uuid !== grant.subject_uuid || item.repository_uuid !== grant.repository_uuid;
@@ -113,61 +133,114 @@ class Permissions extends React.Component {
             }
             this.refreshGrants(this.state.repository);
             console.error(err);
-        })
+        });
     }
 
     render() {
         if (!this.props.loggedIn) {
-            return (
-                <NotLoggedIn/>
-            );
+            return null;
+        }
+        let repository = this.state.repository;
+        if (!repository) {
+            repository = {};
         }
         return (
             <div className="container mt-3">
-                <h5 className="h5">MANAGE PERMISSIONS</h5>
-            <div className="row">
-                <div className="col col-3 mr-3">
-                <RepositorySelect onSelect={this.repositorySelected} />
-                <UserGroupSelect onSelect={this.userOrGroupSelected}/>
-                {this.renderAddUser()}
+                <RepositorySelect ref={this.repositorySelect} onSelect={this.repositorySelected} />
+                <FontAwesomeIcon className="ml-2" icon={faLock} />
+                { this.state.loading ? <FontAwesomeIcon className="ml-2" icon={faSpinner} spin /> : null }
+
+                { this.renderRepositoryHeaders(repository) }
+                <div className="row">
+                    <div className="col col-3 mr-3">
+                        {this.renderAddUser(repository)}
+                    </div>
+                    <div className="col col-6">
+                        {this.renderGrants(repository)}
+                    </div>
                 </div>
-                <div className="col col-6">
-                    {this.renderGrants()}
-                </div>
-            </div>
             </div>
         );
     }
 
-    renderAddUser() {
-        if (!this.state.selectedUser) {
+    renderRepositoryHeaders(repository) {
+        if (!repository.uuid) {
+            return null;
+        }
+        let isPublic = repository.public;
+        let isPrivate = !isPublic; // FIXME - get value from repository
+        
+        return (
+            <div className="text-center">
+            <table className="visibilityTable mt-3"><tbody>
+                <tr>
+                <td>
+                    <p className="h5">Visibility</p>
+                </td>
+                <td>
+                <div className="custom-control custom-radio">
+                    <input type="radio" className="custom-control-input" value="private" id="privateRepository" name="privateRepository" checked={isPrivate} onChange={this.handleVisibilityChange}/>
+                    <label className="custom-control-label" htmlFor="privateRepository">
+                        Private
+                    </label>
+                </div>
+                <div class="custom-control custom-radio">
+                    <input type="radio" className="custom-control-input" value="public" id="publicRepository" name="publicRepository" checked={isPublic} onChange={this.handleVisibilityChange}/>
+                    <label className="custom-control-label" htmlFor="publicRepository">
+                        Public
+                    </label>
+                </div>
+                </td>
+                </tr>
+                </tbody>
+            </table>
+
+
+            <h5 className="h5 mt-3">MANAGE PERMISSIONS</h5>
+            </div>
+        );
+    }
+
+    renderAddUser(repository) {
+        if (!repository.uuid) {
             return null;
         }
         return (
-                <div className="list-group mt-3">
-                    <span className="list-group-item text-dark">
-                        <FontAwesomeIcon className="float-left text-success" icon={faPlus} size="lg"/>
-                        {this.state.selectedUser.name}
-                    </span>
-                    <a href="#" className="list-group-item list-group-item-action text-dark userGroupItem" onClick={() => this.addGrant('Admin')}>
-                        <span className="badge badge-primary">Admin</span>
-                        <div>User/group is able to import, read and delete images.</div>
-                    </a>
-                    <a href="#" className="list-group-item list-group-item-action text-dark userGroupItem" onClick={() => this.addGrant('Read')}>
-                        <span className="badge badge-secondary">Read</span>
-                        <div>User/group is only able to read images.</div>
-                    </a>
+                <div>
+                <UserGroupSelect onSelect={this.userOrGroupSelected}/>
+                {this.renderUserSelected()}
                 </div>
         )
     }
 
-    renderGrants() {
+    renderUserSelected() {
+        if (!this.state.selectedUser) {
+            return null;
+        }
+        return (
+            <div className="list-group mt-3">
+            <span className="list-group-item text-dark">
+                <FontAwesomeIcon className="float-left text-success" icon={faPlus} size="lg"/>
+                {this.state.selectedUser.name}
+            </span>
+            <a href="#" className="list-group-item list-group-item-action text-dark userGroupItem" onClick={() => this.addGrant('Admin')}>
+                <span className="badge badge-primary">Admin</span>
+                <div>User/group is able to import, read and delete images.</div>
+            </a>
+            <a href="#" className="list-group-item list-group-item-action text-dark userGroupItem" onClick={() => this.addGrant('Read')}>
+                <span className="badge badge-secondary">Read</span>
+                <div>User/group is only able to read images.</div>
+            </a>
+        </div>           
+        );
+    }
+
+    renderGrants(repository) {
         if (!this.state.repository) {
             return null;
         }
         return (
             <div>
-                <h2 className="h5">REPOSITORY: {this.state.repository.name}</h2>
             <ul className="list-group">
                 {this.state.grants.map((grant, key) => {
                     let badgeClass = 'badge badge-pill';

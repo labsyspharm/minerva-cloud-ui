@@ -22,7 +22,7 @@ class UserInfo extends React.Component {
 
     }
 
-    logout = () => {
+    logout() {
         this.setState({ loggedIn: false });
         localStorage.removeItem('loggedInUser');
         let cognitoUser = this.state.cognitoUserPool.getCurrentUser();

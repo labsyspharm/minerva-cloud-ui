@@ -40,7 +40,7 @@ class ContextMenu extends React.Component {
                 <span>
                 <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'permissions')}>
                     <FontAwesomeIcon className="mr-2" icon={faUserCog}/>
-                    Manage Permissions
+                    Manage Repository
                 </a>
                 </span>
             )

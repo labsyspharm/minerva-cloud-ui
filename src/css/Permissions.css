@@ -1,3 +1,8 @@
 .userGroupItem:hover {
     background-color: #becbd6;
 }
+
+.visibilityTable {
+    margin-left:auto; 
+    margin-right:auto;
+}

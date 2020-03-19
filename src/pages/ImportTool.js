@@ -7,10 +7,9 @@ import 'alertifyjs/build/css/alertify.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/js/bootstrap.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMicroscope } from '@fortawesome/free-solid-svg-icons'
+import { faMicroscope, faPlus } from '@fortawesome/free-solid-svg-icons'
 import RepositorySelect from '../components/RepositorySelect';
 import '../css/ImportTool.css';
-import NotLoggedIn from '../components/NotLoggedIn';
 
 const STATUS_INITIAL = 0;
 const STATUS_UPLOADING = 1;
@@ -166,7 +165,6 @@ class ImportTool extends React.Component {
                     this.pollImportFilesets(importUuid);
                 });
         });
-        // TODO upload image to S3 ...
     }
 
     uploadS3(file, url, awsCredentials) {
@@ -239,9 +237,7 @@ class ImportTool extends React.Component {
 
     render() {
         if (!this.props.loggedIn) {
-            return (
-                <NotLoggedIn/>
-            );
+            return null;
         }
         return (
             <div className="container">
@@ -249,32 +245,23 @@ class ImportTool extends React.Component {
 
                 <div className="row mb-3 mt-3">
                 <div className="col-6 form-group container">
-                    <div className="row">
-                        <div className="col">
-                            <div className="card bg-dark">
-                                <div className="card-body">
-                                <h5 class="card-title">Create new Repository</h5>
-                                <input type="text" className="" id="repositoryName" name="newRepositoryName" ref={this.newRepositoryName} placeholder="Enter repository name" />&nbsp;
-                                <button type="button" className="btn btn-success" onClick={this.createRepository}>Create</button>
-                                <br/>
-                                <input type="checkbox" className="htmlForm-check-input" id="archive" name="archive" />
-                                <label className="form-check-label" htmlFor="exampleCheck1">Archive raw images</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {this.renderModal()}
 
-                    <div className="row mb-3">
+                    <div className="row mb-3 mt-3">
                         <div className="col">
-                            <div className="mt-3">
                             <RepositorySelect ref={this.selectRepositoryRef} onSelect={this.repositorySelected} />
-                            </div>
+                        </div>
+                        <div className="col">
+                            <button type="button" className="btn btn-success" data-toggle="modal" data-target="#addRepositoryModal">
+                                <FontAwesomeIcon className="mr-3" icon={faPlus} />
+                                Create New
+                            </button>
                         </div>
                     </div>
-                    <div className="row">
-                        <div className="col custom-file">
+                    <div className="row justify-content-center">
+                        <div className="col-6 custom-file justify-content-start">
                             <input className="custom-file-input" type="file" id="inputGroupFile01" onChange={this.onFileSelected} />
-                            <label className="custom-file-label" htmlFor="inputGroupFile01">Select file</label>
+                            <label className="custom-file-label text-left" htmlFor="inputGroupFile01">Select image</label>
                         </div>
                     </div>
 
@@ -293,7 +280,42 @@ class ImportTool extends React.Component {
         );
     }
 
+    renderModal() {
+        return (
+            <div id="addRepositoryModal" className="modal" tabIndex="-1" role="dialog" aria-labelledby="addRepositoryModal" aria-hidden="true">
+            <div className="modal-dialog modal-lg" role="document">
+                <div className="modal-content">
+                <div className="modal-header">
+                    <h5 className="modal-title text-dark">Create New Repository</h5>
+                    <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div className="modal-body text-dark">
+                    <div>
+                                <div className="card-body">
+                                <p className="h5 card-title">You will have Admin permissions for the new repository.</p>
+                                <p className="h5">Other users won't have access to the repository, unless explicitly granted.</p>
+                                <p className="mt-3">
+                                <input type="text" className="" id="repositoryName" name="newRepositoryName" ref={this.newRepositoryName} placeholder="Enter repository name" />&nbsp;
+                                </p>
+                                <p>
+                                    <input type="checkbox" className="htmlForm-check-input" id="archive" name="archive" />
+                                    <label className="form-check-label" htmlFor="exampleCheck1">Archive raw images</label>
+                                </p>    
 
+                                </div>
+                        </div>
+                </div>
+                <div className="modal-footer">
+                    <button type="button" className="btn btn-primary" onClick={this.createRepository} data-dismiss="modal">Create</button>
+                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+                </div>
+            </div>
+            </div>
+        );
+    }
 
     repositorySelected(repository) {
         console.log('Selecting repository ', repository);
@@ -308,6 +330,7 @@ class ImportTool extends React.Component {
         let syncingStatusText = null;
         let extractingStatusText = null;
         let finishedStatusText = null;
+        let fileWarning = null;
 
         if (this.state.status === STATUS_UPLOADING) {
             uploadStatusText = this.state.progress + '%';
@@ -332,6 +355,9 @@ class ImportTool extends React.Component {
         }
         let omeTif = this.state.selectedFile.name.indexOf('.ome.tif') !== -1;
         let rareCyte = this.state.selectedFile.name.indexOf('.rcpnl') !== -1;
+        if (!omeTif && !rareCyte) {
+            fileWarning = '*Warning* File-format may not be supported';
+        }
         return (
             <div className="card bg-dark">
                 <div className="card-body">
@@ -341,6 +367,7 @@ class ImportTool extends React.Component {
                     { omeTif ? <img className="fileIcon" src="ome.svg"/> : null}
                     </p>
                     <p>{this.state.selectedFile.sizeReadable}</p>
+                    <p><strong>{fileWarning}</strong></p>
                     <p><strong>{uploadStatusText}</strong></p>
                     <p><strong>{syncingStatusText}</strong></p>
                     <p><strong>{extractingStatusText}</strong></p>

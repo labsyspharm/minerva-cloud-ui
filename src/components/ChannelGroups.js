@@ -75,7 +75,7 @@ class ChannelGroups extends React.Component {
         );
     }
 
-    renderModal() { // FIXME !
+    renderModal() {
         return (
             <div id="addChannelGroupModal" className="modal" tabIndex="-1" role="dialog" aria-labelledby="addChannelGroupModal" aria-hidden="true">
             <div className="modal-dialog modal-lg" role="document">

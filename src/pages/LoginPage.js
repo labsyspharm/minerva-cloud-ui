@@ -3,12 +3,11 @@ import '../css/LoginPage.css';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
 import {
-    CognitoUserPool,
     CognitoUser,
     AuthenticationDetails
 } from 'amazon-cognito-identity-js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner, faBackward } from '@fortawesome/free-solid-svg-icons'
+import { faSpinner, faBackward, faEnvelope, faKey } from '@fortawesome/free-solid-svg-icons'
 
 class LoginPage extends React.Component {
     constructor(props) {
@@ -24,10 +23,12 @@ class LoginPage extends React.Component {
             password: null,
             passwordConfirmation: null,
             forcedPasswordResponse: null
-        }
+        };
 
         this.login = this.login.bind(this);
         this.changePassword = this.changePassword.bind(this);
+        this.enterPressed = this.enterPressed.bind(this);
+        this.forgotPassword = this.forgotPassword.bind(this);
     }
 
     changePassword() {
@@ -95,7 +96,7 @@ class LoginPage extends React.Component {
                 this.props.loginSuccess(cognitoUser);
             }).catch(err => {
                 this.setState({loginSpinner: false});
-                if (true || err.fields && err.required) {
+                if (err.fields && err.required) {
                     this.setState({showLoginForm: false, showPasswordChange: true, 
                                 forcedPasswordResponse: err,
                                 warning: 'You must update your password before continuing.',
@@ -107,10 +108,33 @@ class LoginPage extends React.Component {
                     this.setState({warning: 'Invalid Email or Password.'});
                 }
             });
-    }
+    };
 
     showLoginForm() {
         this.setState({showPasswordChange: false, showLoginForm: true, warning: ''});
+    }
+
+    enterPressed(evt) {
+        if (evt.key === "Enter") {
+            this.login();
+        }
+    }
+
+    forgotPassword() {
+        let cognitoUser = new CognitoUser({
+            Username: this.state.username,
+            Pool: this.props.userPool
+        });
+
+        cognitoUser.forgotPassword({
+            onSuccess: (result) => {
+                console.log('call result: ' + result);
+                this.setState({warning: 'You have been sent an email which contains instructions how to reset your password.'});
+            },
+            onFailure: (err) => {
+                alertify.error(err.message);
+            }
+        });
     }
 
     render() {
@@ -132,15 +156,22 @@ class LoginPage extends React.Component {
         <form>
             <h2 className="h2 mb-3">MINERVA</h2>
             <div className="loginForm">
-            <div className="form-group">
+            <div className="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1"><FontAwesomeIcon icon={faEnvelope} /></span>
+                </div>
                 <input type="email" className="form-control" placeHolder="Email or Phone" id="username" name="username" onChange={this.handleChange} aria-describedby="emailHelp"/>
             </div>
-            <div className="form-group">
-                <input type="password" className="form-control" placeHolder="Password" id="password" name="password" onChange={this.handleChange} aria-describedby="emailHelp"/>
+            <div className="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1"><FontAwesomeIcon icon={faKey} /></span>
+                </div>
+                <input type="password" className="form-control" placeHolder="Password" id="password" name="password" onChange={this.handleChange} onKeyPress={this.enterPressed} aria-describedby="emailHelp"/>
             </div>
             <button type="button" className="btn form-control btn-primary" onClick={this.login}>Sign in
-                { this.state.loginSpinner ? <FontAwesomeIcon className="float-right" icon={faSpinner} spin /> : null }
+                { this.state.loginSpinner ? <FontAwesomeIcon className="float-right" icon={faSpinner} size="lg" spin /> : null }
             </button>
+            <a href="#" onClick={this.forgotPassword}>Forgot password</a>
             </div>
         </form>
         );

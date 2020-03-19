@@ -39,8 +39,12 @@ class UserGroupSelect extends React.Component {
             timeoutMs = 0;
         }
         this.findTimeout = setTimeout(() => {
-            this.findUsers(search);
-            this.findGroups(search);
+            if (!this.props.hideUsers) {
+                this.findUsers(search);
+            }
+            if (!this.props.hideGroups) {
+                this.findGroups(search);
+            }
         }, timeoutMs);
     }
 

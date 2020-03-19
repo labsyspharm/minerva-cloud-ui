@@ -42,12 +42,12 @@ class RepositorySelect extends React.Component {
         }
 
         return (
-            <div className="dropdown">
-                <button className="form-control btn btn-secondary dropdown-toggle" type="button" id="repositoryDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span className="dropdown">
+                <button className="btn btn-secondary dropdown-toggle" type="button" id="repositoryDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     {repositoryText}
                 </button>
                 {this.renderRepositoryChoices()}
-            </div>
+            </span>
         )
     }
 
@@ -59,9 +59,9 @@ class RepositorySelect extends React.Component {
             </a>
         );
         return (
-            <div className="dropdown-menu" aria-labelledby="repositoryDropdown">
+            <span className="dropdown-menu" aria-labelledby="repositoryDropdown">
                 {choices}
-            </div>
+            </span>
         );
     }
 }

@@ -1,14 +1,12 @@
 import React from 'react';
 import Client from './../MinervaClient';
 import RepositoryTree from './../components/RepositoryTree';
-import ImagePreview from './../components/ImagePreview';
 import ChannelGroups from '../components/ChannelGroups';
 import '../css/Repository.css';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
 import ImageMetadata from '../components/ImageMetadata';
 import OSDViewer from '../components/OSDViewer';
-import NotLoggedIn from '../components/NotLoggedIn';
 
 class Repositories extends React.Component {
     constructor(props) {
@@ -64,9 +62,7 @@ class Repositories extends React.Component {
 
     render() {
         if (!this.props.loggedIn) {
-            return (
-                <NotLoggedIn/>
-            );
+            return null;
         }
         return (
             <div className="row">
