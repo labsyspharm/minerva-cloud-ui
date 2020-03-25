@@ -1,5 +1,16 @@
 # Minerva Admin
 
+Administrator user interface for Minerva. Through the interface, the user is able to:
+* View images and repositories
+* Manage image and repository access
+* Import BioFormats-compatible microscopy images
+* Configure channel rendering settings
+
+## Setting up the development environment
+
+* Install NodeJS (recent version)
+* Run in project directory: `npm install`
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -32,4 +43,4 @@ Deploys the built app to S3 demo bucket "minerva-admin-demo".
 Requires that aws command line tools are installed and configured.
 
 Demo environment is accessible from url:
-http://minerva-admin-demo.s3-website-us-east-1.amazonaws.com/
+* http://minerva-admin-demo.s3-website-us-east-1.amazonaws.com/
