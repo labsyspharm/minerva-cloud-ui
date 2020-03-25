@@ -45,7 +45,9 @@ class OSDViewer extends React.Component {
     }
 
     createTileSource(clear=false) {
+        console.log('Create tile source');
         Client.getToken().then(token => {
+            console.log('Token: ', token);
             let headers = {
                 'Content-Type': 'application/json',
                 'Authorization': token,

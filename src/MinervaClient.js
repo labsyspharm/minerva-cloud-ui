@@ -6,6 +6,7 @@ class MinervaClient {
         this.baseUrl = baseUrl;
         this.currentUser = null;
         this.GRANTS = ['Admin', 'Read', 'Write'];
+        this.guest = false;
     }
 
     loggedIn() {
@@ -14,6 +15,14 @@ class MinervaClient {
 
     setUser(user) {
         this.currentUser = user;
+    }
+
+    setAnonToken(anonToken) {
+        this.anonToken = anonToken;
+    }
+
+    setGuest(guest) {
+        this.guest = guest;
     }
 
     getRepositories() {
@@ -170,16 +179,20 @@ class MinervaClient {
         if (body !== null) {
             args['body'] = JSON.stringify(body)
         }
-        return this.currentUser.getSession((err, session) => {
-            if (err) {
-                console.error(err);
-            }
-            return this._fetch(url, args, session, headers, binary);
-        });
+        if (this.guest) {
+            return this._fetch(url, args, 'Anonymous', headers, binary);
+        } else {
+            return this.currentUser.getSession((err, session) => {
+                if (err) {
+                    console.error(err);
+                }
+                return this._fetch(url, args, session.idToken.jwtToken, headers, binary);
+            });
+        }
     }
 
-    _fetch(url, args, session, headers, binary) {
-        headers["Authorization"] = 'Bearer ' + session.idToken.jwtToken;
+    _fetch(url, args, token, headers, binary) {
+        headers["Authorization"] = 'Bearer ' + token;
         return fetch(url, args).then(response => {
             // Turn HTTP error responses into rejected promises
             if (!response.ok) {
@@ -209,6 +222,9 @@ class MinervaClient {
     getToken() {
         if (!this.currentUser) {
             return Promise.reject();
+        }
+        if (this.guest) {
+            return Promise.resolve('Anonymous');
         }
 
         return new Promise((resolve, reject) => {

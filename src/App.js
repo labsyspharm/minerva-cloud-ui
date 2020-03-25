@@ -1,7 +1,6 @@
 import React from 'react';
 import './css/App.css';
-import './css/dashboard.css';
-import Header from './components/Header'; 
+import Header from './components/Header';
 import ImportTool from './pages/ImportTool';
 import Repositories from './pages/Repositories';
 import Permissions from './pages/Permissions';
@@ -10,79 +9,82 @@ import { Router, navigate } from "@reach/router";
 import Client from './MinervaClient';
 import LoginPage from './pages/LoginPage';
 import {
-  CognitoUserPool,
-  CognitoUser,
-  AuthenticationDetails
+    CognitoUserPool,
 } from 'amazon-cognito-identity-js';
 import AppConfig from './AppConfig';
 
 class App extends React.Component {
 
-  constructor(props) {
-    super(props);
+    constructor(props) {
+        super(props);
 
-    this.state = {
-      loggedIn: false
-    }
-    this.loginSuccess = this.loginSuccess.bind(this);
-    this.logoutSuccess = this.logoutSuccess.bind(this);
+        this.state = {
+            loggedIn: false,
+            guest: false
+        };
 
-    let userPool = new CognitoUserPool({
-      UserPoolId: AppConfig.CognitoUserPoolId,
-      ClientId: AppConfig.CognitoClientId
-    });
-    this.state.userPool = userPool;
+        this.loginSuccess = this.loginSuccess.bind(this);
+        this.logoutSuccess = this.logoutSuccess.bind(this);
 
-    var cognitoUser = userPool.getCurrentUser();
-    if (cognitoUser != null) {
-        cognitoUser.getSession((err, session) => {
-            if (err) {
-                alert(err.message || JSON.stringify(err));
-                return;
-            }
-            this.loginSuccess(cognitoUser);
-            let loggedInUser = localStorage.getItem('loggedInUser');
-            this.state.loggedInUser = loggedInUser;
-            this.state.loggedIn = true;
+        let userPool = new CognitoUserPool({
+            UserPoolId: AppConfig.CognitoUserPoolId,
+            ClientId: AppConfig.CognitoClientId
         });
-    } else {
-      navigate('/login');
+        this.state.userPool = userPool;
+
+        var cognitoUser = userPool.getCurrentUser();
+        if (cognitoUser != null) {
+            cognitoUser.getSession((err, session) => {
+                if (err) {
+                    alert(err.message || JSON.stringify(err));
+                    return;
+                }
+                this.loginSuccess(cognitoUser);
+                let loggedInUser = localStorage.getItem('loggedInUser');
+                this.state.loggedInUser = loggedInUser;
+                this.state.loggedIn = true;
+            });
+        } else {
+            navigate('/login');
+        }
     }
-  }
 
-  loginSuccess(user) {
-    console.log(user);
-    Client.setUser(user);
-    Client.getCognitoDetails();
-    this.setState({loggedIn: true});
-    this.forceUpdate();
-    console.log('loginSuccess');
+    loginSuccess(user, guest = false) {
+        Client.setUser(user);
+        Client.setGuest(guest);
+        this.setState({ loggedIn: true, guest: guest });
+        if (guest) {
+            this.setState({ loggedInUser: 'Guest' });
+        } else {
+            this.setState({ loggedInUser: localStorage.getItem('loggedInUser') });
+        }
+        this.forceUpdate();
 
-    navigate('/');
-  }
+        navigate('/');
+    }
 
-  logoutSuccess() {
-    this.setState({loggedIn: false});
-    this.forceUpdate();
-    console.log('logoutSuccess');
-    navigate('/login');
-  }
+    logoutSuccess() {
+        this.setState({ loggedIn: false });
+        this.forceUpdate();
+        console.log('logoutSuccess');
+        navigate('/login');
+    }
 
-  render() {
-    return (
-      <div className="App text-light">
-        <Header logoutSuccess={this.logoutSuccess} loggedIn={this.state.loggedIn} loggedInUser={this.state.loggedInUser} />
-        <Router className="container-fluid text-light container-fullheight">
-          <LoginPage path="/login" loggedIn={this.state.loggedIn} loginSuccess={this.loginSuccess} userPool={this.state.userPool}/>
-          <ImportTool path="/import" loggedIn={this.state.loggedIn}/>
-          <Repositories path="/" loggedIn={this.state.loggedIn} />
-          <Permissions path="/permissions/:repositoryUuid" loggedIn={this.state.loggedIn} />
-          <Permissions path="/permissions" loggedIn={this.state.loggedIn} />
-        </Router>
-        <footer className="copyright">©2020, Laboratory of Systems Pharmacology. All rights reserved.</footer>
-      </div>
-    );
-  }
+    render() {
+        return (
+            <div className="App text-light">
+                <Header logoutSuccess={this.logoutSuccess} loggedIn={this.state.loggedIn} loggedInUser={this.state.loggedInUser} guest={this.state.guest} />
+                <Router className="container-fluid text-light container-fullheight">
+                    <LoginPage path="/login" loggedIn={this.state.loggedIn} loginSuccess={this.loginSuccess} userPool={this.state.userPool} />
+                    <ImportTool path="/import" loggedIn={this.state.loggedIn} />
+                    <Repositories path="/" loggedIn={this.state.loggedIn} guest={this.state.guest} />
+                    <Permissions path="/permissions/:repositoryUuid" loggedIn={this.state.loggedIn} />
+                    <Permissions path="/permissions" loggedIn={this.state.loggedIn} />
+                </Router>
+                <footer className="copyright">©2020, Laboratory of Systems Pharmacology. All rights reserved.</footer>
+            </div>
+        );
+    }
 }
 
 export default App;

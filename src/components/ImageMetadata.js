@@ -43,8 +43,11 @@ class ImageMetadata extends React.Component {
     }
     
     copyUuidToClipboard() {
-        navigator.clipboard.writeText(this.props.image.uuid);
-        alertify.success('Image uuid copied to clipboard.');
+        // navigator.clipboard is undefined, if page is served with http (unsecure context)
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(this.props.image.uuid);
+            alertify.success('Image uuid copied to clipboard.');
+        }
     }
 
 }

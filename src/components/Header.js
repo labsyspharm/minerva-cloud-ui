@@ -26,22 +26,35 @@ class Header extends React.Component {
             <li className="nav-item">
               <Link className="nav-link" to="/">Repositories</Link>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="import">Import</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="permissions">Permissions</Link>
-            </li>            
-
-
+            { !this.props.guest ? this.renderImportMenu() : null }
+            { !this.props.guest ? this.renderPermissionsMenu() : null }
           </ul>
-          { this.props.loggedIn ? <UserInfo logoutSuccess={this.props.logoutSuccess} loggedInUser={this.props.loggedInUser} /> : null }
+          { this.props.loggedIn ? <UserInfo logoutSuccess={this.props.logoutSuccess} loggedInUser={this.props.loggedInUser} guest={this.props.guest} /> : null }
 
         </div>
 
       </nav>
     );
   }
+
+  renderImportMenu() {
+    return (
+      <li className="nav-item">
+        <Link className="nav-link" to="import">Import</Link>
+      </li>
+    );
+  }
+
+  renderPermissionsMenu() {
+    return (
+      <li className="nav-item">
+        <Link className="nav-link" to="permissions">Permissions</Link>
+      </li> 
+    );
+  }
+
 }
+
+
 
 export default Header;

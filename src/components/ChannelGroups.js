@@ -55,9 +55,12 @@ class ChannelGroups extends React.Component {
             <div className="btn-group-toggle" data-toggle="buttons">
                 { this.renderModal() }
                 <h5 className="h5">CHANNEL GROUPS
-                    &nbsp;<button type="button" className="btn btn-success" onClick={this.showModal} data-toggle="modal" data-target="#addChannelGroupModal">
-                        <FontAwesomeIcon icon={faPlus} />
-                    </button>
+                    &nbsp;
+                    { !this.props.guest ?
+                        <button type="button" className="btn btn-success" onClick={this.showModal} data-toggle="modal" data-target="#addChannelGroupModal">
+                            <FontAwesomeIcon icon={faPlus} />
+                        </button>
+                    : null }
                 </h5>
                 {this.props.groups.map((item, index) => {
                     let clazz = "btn btn-secondary btn-sm btn-block";

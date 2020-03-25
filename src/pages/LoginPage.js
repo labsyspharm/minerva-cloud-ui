@@ -8,6 +8,9 @@ import {
 } from 'amazon-cognito-identity-js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner, faBackward, faEnvelope, faKey } from '@fortawesome/free-solid-svg-icons'
+import Client from '../MinervaClient';
+import AppConfig from '../AppConfig';
+import AWS from 'aws-sdk';
 
 class LoginPage extends React.Component {
     constructor(props) {
@@ -29,6 +32,7 @@ class LoginPage extends React.Component {
         this.changePassword = this.changePassword.bind(this);
         this.enterPressed = this.enterPressed.bind(this);
         this.forgotPassword = this.forgotPassword.bind(this);
+        this.anonymousLogin = this.anonymousLogin.bind(this);
     }
 
     changePassword() {
@@ -110,6 +114,14 @@ class LoginPage extends React.Component {
             });
     };
 
+    anonymousLogin() {
+        const cognitoUser = new CognitoUser({
+            Username: '00000000-0000-0000-0000-000000000000',
+            Pool: this.props.userPool
+        });
+        this.props.loginSuccess(cognitoUser, true);
+    }
+
     showLoginForm() {
         this.setState({showPasswordChange: false, showLoginForm: true, warning: ''});
     }
@@ -121,6 +133,10 @@ class LoginPage extends React.Component {
     }
 
     forgotPassword() {
+        if (!this.state.username) {
+            alertify.warning('Input your email or phone first.');
+            return;
+        }
         let cognitoUser = new CognitoUser({
             Username: this.state.username,
             Pool: this.props.userPool
@@ -168,10 +184,13 @@ class LoginPage extends React.Component {
                 </div>
                 <input type="password" className="form-control" placeHolder="Password" id="password" name="password" onChange={this.handleChange} onKeyPress={this.enterPressed} aria-describedby="emailHelp"/>
             </div>
-            <button type="button" className="btn form-control btn-primary" onClick={this.login}>Sign in
+            <button type="button" className="btn form-control btn-primary mb-3" onClick={this.login}>Sign in
                 { this.state.loginSpinner ? <FontAwesomeIcon className="float-right" icon={faSpinner} size="lg" spin /> : null }
             </button>
-            <a href="#" onClick={this.forgotPassword}>Forgot password</a>
+            <a href="#" onClick={this.forgotPassword}>Forgot password</a><br></br>
+            <button type="button" className="btn form-control btn-outline-light mt-3" onClick={this.anonymousLogin}>Continue as Guest
+            </button>
+            
             </div>
         </form>
         );

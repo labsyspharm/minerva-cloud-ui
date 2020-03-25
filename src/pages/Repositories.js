@@ -80,7 +80,7 @@ class Repositories extends React.Component {
                     <ImageMetadata metadata={this.state.imageDetails} image={this.state.selected} />
                     <hr/>
                     
-                    <ChannelGroups groups={this.state.channelGroups} onChannelGroupSelected={this.selectChannelGroup} node={this.state.selected}/>
+                    <ChannelGroups groups={this.state.channelGroups} onChannelGroupSelected={this.selectChannelGroup} node={this.state.selected} guest={this.props.guest}/>
                 </div>
             </div>
 
