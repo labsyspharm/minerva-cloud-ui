@@ -2,7 +2,7 @@ import React from 'react';
 import Client from '../MinervaClient';
 import Spinner from './Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faUser, faUsers, faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faUser, faUsers } from '@fortawesome/free-solid-svg-icons'
 
 class UserGroupSelect extends React.Component {
 

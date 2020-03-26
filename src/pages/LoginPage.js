@@ -8,9 +8,6 @@ import {
 } from 'amazon-cognito-identity-js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner, faBackward, faEnvelope, faKey } from '@fortawesome/free-solid-svg-icons'
-import Client from '../MinervaClient';
-import AppConfig from '../AppConfig';
-import AWS from 'aws-sdk';
 
 class LoginPage extends React.Component {
     constructor(props) {
@@ -59,7 +56,6 @@ class LoginPage extends React.Component {
         localStorage.setItem('loggedInUser', this.state.username);
         alertify.success("Login success", 2);
         this.props.loginSuccess(cognitoUser);
-        console.log(data);
     }
 
     handleChange = evt => {
@@ -173,18 +169,18 @@ class LoginPage extends React.Component {
             <h2 className="h2 mb-3">MINERVA</h2>
             <div className="loginForm">
             <div className="input-group mb-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text" id="basic-addon1"><FontAwesomeIcon icon={faEnvelope} /></span>
+                <div className="input-group-prepend">
+                    <span className="input-group-text" id="basic-addon1"><FontAwesomeIcon icon={faEnvelope} /></span>
                 </div>
-                <input type="email" className="form-control" placeHolder="Email or Phone" id="username" name="username" onChange={this.handleChange} aria-describedby="emailHelp"/>
+                <input type="email" className="form-control" placeholder="Email or Phone" id="username" name="username" onChange={this.handleChange} aria-describedby="emailHelp"/>
             </div>
             <div className="input-group mb-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text" id="basic-addon1"><FontAwesomeIcon icon={faKey} /></span>
+                <div className="input-group-prepend">
+                    <span className="input-group-text" id="basic-addon1"><FontAwesomeIcon icon={faKey} /></span>
                 </div>
-                <input type="password" className="form-control" placeHolder="Password" id="password" name="password" onChange={this.handleChange} onKeyPress={this.enterPressed} aria-describedby="emailHelp"/>
+                <input type="password" className="form-control" placeholder="Password" id="password" name="password" onChange={this.handleChange} onKeyPress={this.enterPressed} aria-describedby="emailHelp"/>
             </div>
-            <button type="button" className="btn form-control btn-primary mb-3" onClick={this.login}>Sign in
+            <button type="button" className="btn form-control btn-primary mb-3" disabled={this.state.loginSpinner} onClick={this.login}>Sign in
                 { this.state.loginSpinner ? <FontAwesomeIcon className="float-right" icon={faSpinner} size="lg" spin /> : null }
             </button>
             <a href="#" onClick={this.forgotPassword}>Forgot password</a><br></br>
@@ -206,10 +202,10 @@ class LoginPage extends React.Component {
             </h3>
             <div className="loginForm">
             <div className="form-group">
-                <input type="password" className="form-control" placeHolder="New Password" id="password" name="password" onChange={this.handleChange} aria-describedby="emailHelp"/>
+                <input type="password" className="form-control" placeholder="New Password" id="password" name="password" onChange={this.handleChange} aria-describedby="emailHelp"/>
             </div>
             <div className="form-group">
-                <input type="password" className="form-control" placeHolder="New Password (confirmation)" id="password" name="passwordConfirmation" onChange={this.handleChange} aria-describedby="emailHelp"/>
+                <input type="password" className="form-control" placeholder="New Password (confirmation)" id="password" name="passwordConfirmation" onChange={this.handleChange} aria-describedby="emailHelp"/>
             </div>
             <button type="button" className="btn form-control btn-primary" onClick={this.changePassword}>Update Password
                 { this.state.loginSpinner ? <FontAwesomeIcon className="float-right" icon={faSpinner} spin /> : null }

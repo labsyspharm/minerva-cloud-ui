@@ -14,7 +14,6 @@ class OSDViewer extends React.Component {
     }
 
     componentDidMount() {
-        console.log(this.osdRef.current.id);
         if (this.osdRef.current) {
             console.log('Creating OpenSeadragon viewer');
             const viewer = OpenSeadragon({
@@ -36,34 +35,34 @@ class OSDViewer extends React.Component {
 
     componentDidUpdate(prevProps, prevState, snapshot) {
         if (this.props.metadata) {
+            if (prevProps.metadata && prevProps.metadata.image_uuid === this.props.metadata.image_uuid && 
+                prevProps.metadata.renderingSettingsUuid === this.props.metadata.renderingSettingsUuid) {
+                    // componentDidUpdate is called twice when selecting an image ???
+                    console.log('Metadata not changed');
+                    return;
+                }
             let imageChanged = false;
             if (prevProps.metadata && prevProps.metadata.image_uuid !== this.props.metadata.image_uuid) {
                 imageChanged = true;
             }
+            console.log('componentDidUpdate ', prevProps);
             this.createTileSource(imageChanged);
         }
     }
 
     createTileSource(clear=false) {
-        console.log('Create tile source');
         Client.getToken().then(token => {
-            console.log('Token: ', token);
             let headers = {
                 'Content-Type': 'application/json',
                 'Authorization': token,
                 'Accept': 'image/jpeg'
             };
             let getTileFunction = this.props.metadata.renderingSettingsUuid ? this.prerenderedTile : this.renderTile;
-            if (clear) {
-                this.state.viewer.world.removeAll();
-            }
-            
-            this.state.viewer.addTiledImage({
+
+            let options = {
                 loadTilesWithAjax: true,
                 crossOriginPolicy: 'Anonymous',
                 ajaxHeaders: headers,
-                index: 1,
-                replace: true,
                 tileSource: {
                     height: this.props.metadata.pixels.SizeY,
                     width: this.props.metadata.pixels.SizeX,
@@ -72,7 +71,16 @@ class OSDViewer extends React.Component {
                     tileHeight: 1024,
                     getTileUrl: getTileFunction
                 }
-            });
+            };
+
+            if (clear) {
+                this.state.viewer.world.removeAll();
+            } else {
+                options.index = 1;
+                options.replace = true;
+            }
+            
+            this.state.viewer.addTiledImage(options);
         });
 
     }

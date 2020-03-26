@@ -3,6 +3,7 @@ import Client from '../MinervaClient';
 import TreeNode from './TreeNode';
 import '../css/Tree.css';
 import ContextMenu from './ContextMenu';
+import Spinner from './Spinner';
 
 class RepositoryTree extends Component {
 
@@ -21,9 +22,12 @@ class RepositoryTree extends Component {
             rootNode: null,
             selected: null,
             context: null,
-            contextClass: ''
+            contextClass: '',
+            loading: true
         }
+    }
 
+    componentDidMount() {
         this.refreshRepositories(); 
     }
 
@@ -33,10 +37,8 @@ class RepositoryTree extends Component {
             return;
         }
         Client.getRepositories().then(repos => {
-            console.log(repos);
             let repositories = [];
             for (let repo of repos.included.repositories) {
-                console.log(repo);
                 repositories.push({
                     type: 'repository',
                     uuid: repo.uuid,
@@ -50,20 +52,18 @@ class RepositoryTree extends Component {
                     color: 'primary'
                 });
             }
-            console.log(repos);
             let rootNode = {
                 root: true,
                 children: repositories,
                 level: 1
             }
-            this.setState({ rootNode: rootNode });
+            this.setState({ rootNode: rootNode, loading: false });
         }).catch(err => {
             console.error(err);
         });
     }
 
     loadChildren(node, onFinished) {
-        console.log('load children ', node);
         if (node.leaf) {
             return;
         }
@@ -83,7 +83,6 @@ class RepositoryTree extends Component {
             node.children = node.children.concat(res);
             node.expanded = true;
             onFinished();
-            console.log(node.children);
             this.forceUpdate();
         });
     }
@@ -119,7 +118,6 @@ class RepositoryTree extends Component {
     }
 
     select(node) {
-        console.log('Node selected ', node);
         this.setState({selected: node});
         this.props.onSelect(node);
     }
@@ -145,9 +143,12 @@ class RepositoryTree extends Component {
     render() {
         
         return (
-            <div className="treeRoot">
-                <TreeNode node={this.state.rootNode} onExpand={this.loadChildren} onClose={this.closeNode} onSelect={this.select} onOpenContextMenu={this.openContextMenu}></TreeNode>
-                <ContextMenu className={this.state.contextClass} node={this.state.context} onDeleted={this.onDeleted} onRestored={this.onRestored} onClosed={this.onContextMenuClosed} left={this.state.contextLeft} top={this.state.contextTop}/>
+            <div>
+                <h5 className="h5 text-left">REPOSITORIES <Spinner show={this.state.loading} /></h5>
+                <div className="treeRoot">
+                    <TreeNode node={this.state.rootNode} onExpand={this.loadChildren} onClose={this.closeNode} onSelect={this.select} onOpenContextMenu={this.openContextMenu}></TreeNode>
+                    <ContextMenu className={this.state.contextClass} node={this.state.context} onDeleted={this.onDeleted} onRestored={this.onRestored} onClosed={this.onContextMenuClosed} left={this.state.contextLeft} top={this.state.contextTop}/>
+                </div>
             </div>
         );
     }

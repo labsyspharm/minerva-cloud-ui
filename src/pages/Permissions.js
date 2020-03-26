@@ -3,7 +3,7 @@ import RepositorySelect from '../components/RepositorySelect';
 import UserGroupSelect from '../components/UserGroupSelect';
 import Client from '../MinervaClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMinus, faUser, faUsers, faUserShield, faPlus, faLock, faEye, faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faMinus, faUser, faUsers, faUserShield, faPlus, faSpinner } from '@fortawesome/free-solid-svg-icons'
 import Spinner from '../components/Spinner';
 import '../css/Permissions.css';
 import alertify from 'alertifyjs';
@@ -30,7 +30,7 @@ class Permissions extends React.Component {
 
     componentDidMount() {
         if (this.props.repositoryUuid) {
-            this.state.loading = true;
+            this.setState({ loading: true });
             Client.getRepository(this.props.repositoryUuid).then(response => {
                 this.repositorySelect.current.selectRepository(response.data);
             });
@@ -65,7 +65,7 @@ class Permissions extends React.Component {
             console.log('Permission granted');
             this.refreshGrants(this.state.repository);
         }).catch(err => {
-            if (err.status == 403) {
+            if (err.status === 403) {
                 alertify.error("Only repository Admins can add permissions");
             } else {
                 alertify.error(err.message);
@@ -78,7 +78,6 @@ class Permissions extends React.Component {
     refreshGrants(repository) {
         this.setState({loading: true});
         Client.listGrantsForRepository(repository.uuid).then(response => {
-            console.log(response);
             
             this.setState({grants: response.data, 
                 users: response.included.users, 
@@ -110,7 +109,7 @@ class Permissions extends React.Component {
 
         Client.deleteGrant(grant.repository_uuid, grant.subject_uuid).then(response => {
         }).catch(err => {
-            if (err.status == 403) {
+            if (err.status === 403) {
                 alertify.error("Only repository Admins can remove permissions");
             } else {
                 alertify.error(err.message);
@@ -195,9 +194,9 @@ class Permissions extends React.Component {
 
     _getBadgeClass(permission) {
         let badgeClass = 'badge badge-pill';
-        if (permission == 'Admin') {
+        if (permission === 'Admin') {
             return badgeClass + ' badge-primary';
-        } else if (permission == 'Read') {
+        } else if (permission === 'Read') {
             return badgeClass + ' badge-secondary';
         }
     }
@@ -210,12 +209,11 @@ class Permissions extends React.Component {
             <div>
             <ul className="list-group">
                 {this.state.grants.map((grant, key) => {
-                    console.log(grant);
                     let nameAndType = this.getNameAndType(grant.subject_uuid);
                     let icon = faUser;
                     if (nameAndType.type === 'group') {
                         icon = faUsers;
-                    } else if (grant.permission == 'Admin') {
+                    } else if (grant.permission === 'Admin') {
                         icon = faUserShield;
                     }
                     let badgeClass = this._getBadgeClass(grant.permission);

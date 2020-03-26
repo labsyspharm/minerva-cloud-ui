@@ -126,7 +126,7 @@ class ImportTool extends React.Component {
         })
         .catch((err) => {
             console.error(err);
-            if (err.status == 403) {
+            if (err.status === 403) {
                 alertify.error('You don\'t have write permission to selected repository.');
             } else {
                 alertify.error(err.message);
@@ -318,7 +318,6 @@ class ImportTool extends React.Component {
     }
 
     repositorySelected(repository) {
-        console.log('Selecting repository ', repository);
         this.setState({ repository: repository });
     }
 
@@ -364,7 +363,7 @@ class ImportTool extends React.Component {
                     <h5 className="card-title">{this.state.selectedFile.name}</h5>
                     <p>
                     { rareCyte ? <FontAwesomeIcon icon={faMicroscope}/> : null}
-                    { omeTif ? <img className="fileIcon" src="ome.svg"/> : null}
+                    { omeTif ? <img className="fileIcon" src="ome.svg" alt="File Icon" /> : null}
                     </p>
                     <p>{this.state.selectedFile.sizeReadable}</p>
                     <p><strong>{fileWarning}</strong></p>

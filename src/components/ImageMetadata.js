@@ -13,7 +13,6 @@ class ImageMetadata extends React.Component {
     }
     
     render() {
-        console.log(this.props.metadata);
         if (!this.props.image) {
             return null;
         }

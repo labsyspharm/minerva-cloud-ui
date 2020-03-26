@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner, faDatabase, faImage } from '@fortawesome/free-solid-svg-icons'
+import { faDatabase, faImage } from '@fortawesome/free-solid-svg-icons'
 import ContextMenu from './ContextMenu';
 import Spinner from './Spinner';
 
@@ -19,7 +19,7 @@ class TreeNode extends React.Component {
     }
 
     render() {
-        if (this.props.node == null) {
+        if (!this.props.node) {
             return null;
         }
         if (this.props.node.root) {
@@ -36,11 +36,6 @@ class TreeNode extends React.Component {
         if (this.props.node.deleted) {
             liClass += ' treeNodeDeleted';
         }
-        let badgeClass = 'badge badge-pill';
-        if (this.props.node.color) {
-            badgeClass += ' badge-' + this.props.node.color;
-        }
-        let nodeType = this.props.node.type.charAt(0).toUpperCase();
         return (
             <li ref={this.ref} className={liClass} onClick={(evt) => this.onClick(this.props.node, evt)} onContextMenu={(evt) => this.openContextMenu(this.props.node, evt)}>
                 {this.renderIcon()}&nbsp;
@@ -54,7 +49,7 @@ class TreeNode extends React.Component {
     }
 
     renderIcon() {
-        if (this.props.node.type == 'repository') {
+        if (this.props.node.type === 'repository') {
             return (
                 <FontAwesomeIcon icon={faDatabase}></FontAwesomeIcon>
             )

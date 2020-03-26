@@ -34,7 +34,7 @@ class ChannelGroups extends React.Component {
         Client.createRenderingSettings(this.props.node.uuid, obj).then(response => {
             alertify.success('Created new channel group');
         }).catch(err => {
-            if (err.status == 403) {
+            if (err.status === 403) {
                 alertify.error('You don\'t have sufficient permissions to add new channel groups to this image.');
             } else {
                 alertify.error(err.message);

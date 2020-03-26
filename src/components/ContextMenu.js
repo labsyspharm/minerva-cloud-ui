@@ -35,7 +35,7 @@ class ContextMenu extends React.Component {
     }
 
     renderItems(nodeType) {
-        if (nodeType == 'repository') {
+        if (nodeType === 'repository') {
             return (
                 <span>
                 <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'permissions')}>
@@ -44,12 +44,12 @@ class ContextMenu extends React.Component {
                 </a>
                 </span>
             )
-        } else if (nodeType == 'fileset') {
+        } else if (nodeType === 'fileset') {
             return (
                 <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'delete')}>Delete</a>
             )
         }
-        else if (nodeType == 'image') {
+        else if (nodeType ==='image') {
             return (
                 <span>
                 <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'open')}>
