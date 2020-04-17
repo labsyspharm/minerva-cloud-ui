@@ -33,6 +33,15 @@ class MinervaClient {
         return this.apiFetch('GET', `/repository/${uuid}`);
     }
 
+    updateRepository(repository) {
+        let data = {
+            name: repository.name,
+            raw_storage: repository.raw_storage,
+            access: repository.access
+        };
+        return this.apiFetch('PUT', `/repository/${repository.uuid}`, { body: data });
+    }
+
     getImports(repositoryUuid) {
         return this.apiFetch('GET', '/repository/' + repositoryUuid + '/imports');
     }
@@ -172,8 +181,8 @@ class MinervaClient {
         const args = {
             method,
             headers,
-            mode: 'cors',
-            cache: 'no-cache'
+            mode: 'cors'
+            //cache: 'no-cache'
         };
 
         if (body !== null) {
@@ -202,6 +211,9 @@ class MinervaClient {
                             status: response.status,
                             message: text
                         });
+                    }).catch(err => {
+                        console.error(err);
+                        return Promise.reject(err);
                     });
             }
 

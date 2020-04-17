@@ -7,9 +7,10 @@ import 'alertifyjs/build/css/alertify.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/js/bootstrap.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMicroscope, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faMicroscope, faPlus, faInfoCircle } from '@fortawesome/free-solid-svg-icons'
 import RepositorySelect from '../components/RepositorySelect';
 import '../css/ImportTool.css';
+import ImportHelpModal from '../components/ImportHelpModal';
 
 const STATUS_INITIAL = 0;
 const STATUS_UPLOADING = 1;
@@ -241,13 +242,18 @@ class ImportTool extends React.Component {
         }
         return (
             <div className="container">
-                {this.renderHelp()}
-
+                <ImportHelpModal modalId="renderHelpModal"/>
                 <div className="row mb-3 mt-3">
                 <div className="col-6 form-group container">
-                    {this.renderModal()}
+                    {this.renderNewRepositoryModal()}
 
                     <div className="row mb-3 mt-3">
+                        <div className="col">
+                        <button type="button" className="btn btn-outline-light" data-toggle="modal" data-target="#renderHelpModal">
+                                <FontAwesomeIcon className="mr-3" icon={faInfoCircle} size="lg" />
+                                Instructions
+                        </button>
+                        </div>
                         <div className="col">
                             <RepositorySelect ref={this.selectRepositoryRef} onSelect={this.repositorySelected} />
                         </div>
@@ -280,7 +286,7 @@ class ImportTool extends React.Component {
         );
     }
 
-    renderModal() {
+    renderNewRepositoryModal() {
         return (
             <div id="addRepositoryModal" className="modal" tabIndex="-1" role="dialog" aria-labelledby="addRepositoryModal" aria-hidden="true">
             <div className="modal-dialog modal-lg" role="document">
@@ -330,27 +336,40 @@ class ImportTool extends React.Component {
         let extractingStatusText = null;
         let finishedStatusText = null;
         let fileWarning = null;
+        let buttonText = "Start import";
+        let buttonClass = "btn ";
 
+        if (this.state.status === STATUS_INITIAL) {
+            buttonClass += "btn-primary"
+        }
         if (this.state.status === STATUS_UPLOADING) {
             uploadStatusText = this.state.progress + '%';
             uploadStatusText = 'Uploading file ' + uploadStatusText;
             syncingStatusText = 'Don\'t close browser!';
+            buttonText = "Processing import...";
+            buttonClass += "btn-info";
         }
         if (this.state.status === STATUS_SYNCING) {
             uploadStatusText = 'Uploading finished';
             syncingStatusText = 'Syncing EFS...';
+            buttonText = "Processing import...";
+            buttonClass += "btn-info";
         }
         if (this.state.status === STATUS_EXTRACTING) {
             extractingStatusText = this.state.extractProgress + '%';
             extractingStatusText = 'BioFormats extraction ' + extractingStatusText;
             uploadStatusText = 'Uploading finished';
             syncingStatusText = 'Syncing finished';
+            buttonText = "Processing import...";
+            buttonClass += "btn-info";
         }
         if (this.state.status === STATUS_FINISHED) {
             uploadStatusText = 'Uploading finished';
             syncingStatusText = 'Syncing finished';
             extractingStatusText = 'Extracting finished';
             finishedStatusText = 'Import finished!';
+            buttonText = "SUCCESS";
+            buttonClass += "btn-success";
         }
         let omeTif = this.state.selectedFile.name.indexOf('.ome.tif') !== -1;
         let rareCyte = this.state.selectedFile.name.indexOf('.rcpnl') !== -1;
@@ -373,29 +392,12 @@ class ImportTool extends React.Component {
                     <p><strong>{finishedStatusText}</strong></p>
                 </div>
                 { this.state.status === STATUS_INITIAL ? 
-                    <button type="button" className="btn btn-primary" disabled={this.state.status === STATUS_UPLOADING} onClick={this.startImport}>Start import</button>
+                    <button type="button" className={buttonClass} disabled={this.state.status !== STATUS_INITIAL} onClick={this.startImport}>{buttonText}</button>
                     :
-                    <span className="btn btn-success">Processing import...</span>
+                    <span className={buttonClass}>{buttonText}</span>
                 }
 
             </div>
-        );
-    }
-
-    renderHelp() {
-        return (
-            <div className="importHelpBox text-left">
-            <dl>
-                <dt>Create new repository</dt>
-                <dd>Alternatively use a pre-existing one</dd>
-                <dt>Select Repository</dt>
-                <dd>Image will be imported to this repository</dd>
-                <dt>Select image</dt>
-                <dd>Supported files are BioFormats-compatible formats such as .ome.tif or .rcpnl</dd>
-                <dt>Click Start Import</dt>
-                <dd>Don't close browser while uploading file. It's safe to close the browser after the upload has completed.</dd>
-            </dl>
-        </div>
         );
     }
 }

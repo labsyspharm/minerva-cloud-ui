@@ -3,7 +3,7 @@ import RepositorySelect from '../components/RepositorySelect';
 import UserGroupSelect from '../components/UserGroupSelect';
 import Client from '../MinervaClient';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMinus, faUser, faUsers, faUserShield, faPlus, faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faMinus, faUser, faUsers, faUserShield, faPlus, faSpinner, faEye, faLock } from '@fortawesome/free-solid-svg-icons'
 import Spinner from '../components/Spinner';
 import '../css/Permissions.css';
 import alertify from 'alertifyjs';
@@ -18,13 +18,16 @@ class Permissions extends React.Component {
             grants: [],
             users: [],
             repository: null,
+            repositoryName: null,
             selectedUser: null,
             loading: false
         };
 
         this.repositorySelected = this.repositorySelected.bind(this);
         this.userOrGroupSelected = this.userOrGroupSelected.bind(this);
-
+        this.handleChange = this.handleChange.bind(this);
+        this.updateRepository = this.updateRepository.bind(this);
+        this.setRepositoryPublic = this.setRepositoryPublic.bind(this);
         this.repositorySelect = React.createRef();
     }
 
@@ -37,10 +40,20 @@ class Permissions extends React.Component {
         }
     }
 
+    handleChange(evt) {
+        const value =
+            evt.target.type === "checkbox" ? evt.target.checked : evt.target.value;
+        this.setState({
+            ...this.state,
+            [evt.target.name]: value
+        });
+    }
+
     repositorySelected(repository) {
         if (this.state.repository && this.state.repository.uuid === repository.uuid) {
             return;
         }
+        this.setState({repositoryName: repository.name});
         this.refreshGrants(repository);
     }
 
@@ -78,11 +91,12 @@ class Permissions extends React.Component {
     refreshGrants(repository) {
         this.setState({loading: true});
         Client.listGrantsForRepository(repository.uuid).then(response => {
-            
+            console.log(response);
+            let groups = response.included.groups.filter(g => g.name !== 'MinervaPublicRead');
             this.setState({grants: response.data, 
                 users: response.included.users, 
                 repository: repository, 
-                groups: response.included.groups, 
+                groups: groups, 
                 loading: false});
         });
     }
@@ -119,6 +133,40 @@ class Permissions extends React.Component {
         });
     }
 
+    updateRepository() {
+        this.state.repository.name = this.state.repositoryName;
+        alertify.success('Updating Repository...');
+        Client.updateRepository(this.state.repository).then(res => {
+            console.log(res);
+            this.repositorySelect.current.selectRepository(res.data);
+        }).catch(err => {
+            alertify.error('Updating Repository failed');
+            console.error(err);
+        });
+    }
+
+    setRepositoryPublic(isPublic) {
+        let message = isPublic ? 'Making the repository public allows everyone to view the images. Are you sure?'
+                               : 'Are you sure you want to hide this repository from the public?'
+        let confirmation = isPublic ? this.state.repository.name + ' >> Public'
+                                    : this.state.repository.name + ' >> Private';
+        alertify.confirm(confirmation, message,
+            () => {
+                let repository = {};
+                Object.assign(repository, this.state.repository);
+                repository.access = isPublic ? 'PublicRead' : 'Private';
+                Client.updateRepository(repository).then(res => {
+                    console.log(res);
+                    this.repositorySelect.current.selectRepository(res.data);
+                    this.setState({ repository: repository });
+                }).catch(err => {
+                    alertify.error('Updating Repository failed');
+                    console.error(err);
+                });
+            }, () => {});
+
+    }
+
     render() {
         if (!this.props.loggedIn) {
             return null;
@@ -151,9 +199,54 @@ class Permissions extends React.Component {
         }
         
         return (
-            <div className="text-center">
+            <div className="text-center mt-3">
+                <form>
+                    <div className="row">
+                        <div className="col">
+                            <label htmlFor="repositoryNameInput">Repository name</label>
+                            <div className="input-group">
+                                <input id="repositoryNameInput" name="repositoryName" onChange={this.handleChange} type="text" className="form-control" value={this.state.repositoryName} />
+                                <button type="button" className="btn btn-secondary" onClick={this.updateRepository}>Rename</button>
+                            </div>
+                        </div>
+                        <div className="col">
+                            {this.state.repository.access == 'Private' ?
+                                <div>
+                                    <label htmlFor="accessButton">
+                                        <FontAwesomeIcon className="mr-1" icon={faLock} size="lg" />
+                                    PRIVATE REPOSITORY
+                                </label>
+                                    <div className="input-group">
+                                        <button id="accessButton" type="button" className="btn btn-warning form-control" onClick={() => this.setRepositoryPublic(true)}>
+                                            Make Public
+                                </button>
+                                    </div>
+                                </div>
+                                :
+                                <div>
+                                    <label htmlFor="accessButton">
+                                        <FontAwesomeIcon className="mr-1" icon={faEye} size="lg" />
+                                        PUBLIC REPOSITORY
+                                    </label>
+                                    <div className="input-group">
+                                        <button id="accessButton" type="button" className="btn btn-warning form-control" onClick={() => this.setRepositoryPublic(false)}>
+                                            Make Private
+                                        </button>
+                                    </div>
+                                </div>
+                            }
 
-            <h5 className="h5 mt-3">MANAGE PERMISSIONS</h5>
+                        </div>
+                    </div>
+                    <div className="row">
+
+                        <div className="col">
+                            Uuid: {repository.uuid}
+                        </div>
+                        <div className="col"></div>
+                    </div>
+                </form>
+                <h5 className="h5 mt-3">MANAGE PERMISSIONS</h5>
             </div>
         );
     }
@@ -210,6 +303,9 @@ class Permissions extends React.Component {
             <ul className="list-group">
                 {this.state.grants.map((grant, key) => {
                     let nameAndType = this.getNameAndType(grant.subject_uuid);
+                    if (!nameAndType.name) {
+                        return null;
+                    }
                     let icon = faUser;
                     if (nameAndType.type === 'group') {
                         icon = faUsers;

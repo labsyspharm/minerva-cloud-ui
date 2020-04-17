@@ -9,6 +9,8 @@ class OSDViewer extends React.Component {
         super(props);
 
         this.osdRef = React.createRef();
+        this.zoomInRef = React.createRef();
+        this.zoomOutRef = React.createRef();
         this.renderTile = this.renderTile.bind(this);
         this.prerenderedTile = this.prerenderedTile.bind(this); 
     }
@@ -19,11 +21,7 @@ class OSDViewer extends React.Component {
             const viewer = OpenSeadragon({
                 element: this.osdRef.current,
                 prefixUrl: 'https://cdnjs.cloudflare.com/ajax/libs/openseadragon/2.3.1/images/',
-                navigatorPosition: 'BOTTOM_RIGHT',
-                showZoomControl: true,
-                showHomeControl: true,
-                zoomOutButton: 'zoom-out',
-                zoomInButton: 'zoom-in',
+                showNavigationControl: false,
                 immediateRender: true,
                 maxZoomPixelRatio: 10,
                 visibilityRatio: 0.75
@@ -38,14 +36,12 @@ class OSDViewer extends React.Component {
             if (prevProps.metadata && prevProps.metadata.image_uuid === this.props.metadata.image_uuid && 
                 prevProps.metadata.renderingSettingsUuid === this.props.metadata.renderingSettingsUuid) {
                     // componentDidUpdate is called twice when selecting an image ???
-                    console.log('Metadata not changed');
                     return;
                 }
             let imageChanged = false;
             if (prevProps.metadata && prevProps.metadata.image_uuid !== this.props.metadata.image_uuid) {
                 imageChanged = true;
             }
-            console.log('componentDidUpdate ', prevProps);
             this.createTileSource(imageChanged);
         }
     }
@@ -75,6 +71,7 @@ class OSDViewer extends React.Component {
 
             if (clear) {
                 this.state.viewer.world.removeAll();
+
             } else {
                 options.index = 1;
                 options.replace = true;
@@ -104,7 +101,10 @@ class OSDViewer extends React.Component {
 
     render() {
         return (
-            <div className="osdContainer" ref={this.osdRef}></div>
+            <div className="osdContainer" ref={this.osdRef}>
+                <span className="osdZoomIn" ref={this.zoomInRef} />
+                <span className="osdZoomOut" ref={this.zoomOutRef} />
+            </div>
         );
     }
 

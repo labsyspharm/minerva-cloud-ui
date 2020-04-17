@@ -6,3 +6,15 @@
 .openseadragon-container :focus { 
     outline: none; 
 }
+
+.osdZoomIn {
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
+.osdZoomOut {
+    position: absolute;
+    left: 0;
+    right: 0;
+}

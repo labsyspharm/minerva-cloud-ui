@@ -1,5 +1,7 @@
 import React from 'react';
 import Client from './../MinervaClient';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSync } from '@fortawesome/free-solid-svg-icons'
 
 class ActiveImports extends React.Component {
 
@@ -10,31 +12,42 @@ class ActiveImports extends React.Component {
             filesets: []
         }
 
-        this.loadActiveImports();
-    
+        this.loadActiveImports = this.loadActiveImports.bind(this);
+        this.startPolling = this.startPolling.bind(this);
     }
 
     componentDidMount(){
-        this.interval = setInterval(() => {
-            this.loadActiveImports();
-        }, 5000)
+        this.startPolling();
     }
 
     componentWillUnmount(){
-       clearInterval(this.interval);
+        if (this.interval) {
+            clearInterval(this.interval);
+        }
+    }
+
+    startPolling() {
+        this.loadActiveImports();
+        this.interval = setInterval(() => {
+            this.loadActiveImports();
+        }, 3000)
     }
 
     loadActiveImports() {
         Client.listIncompleteImports().then(res => {
             this.setState({ filesets: res.included.filesets });
-            console.log(res);
+            if (!res.included.filesets || res.included.filesets.length === 0) {
+                clearInterval(this.interval);
+            }
         });
     }
 
     render() {
         return (
             <div>
-                <h4>Fileset import status</h4>
+                <span className="h5">Fileset import status
+                    <button className="btn btn-secondary ml-2" onClick={this.startPolling}><FontAwesomeIcon icon={faSync} /></button>
+                </span>
                 {this.renderImports()}
             </div>
         );
