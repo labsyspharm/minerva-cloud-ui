@@ -87,7 +87,7 @@ class OSDViewer extends React.Component {
         const api = Client.baseUrl + '/image/' + this.props.metadata.image.uuid + '/render-tile/';
         const lod = (this.props.metadata.image.pyramid_levels - level  ) + '/';
         const pos = x + '/' + y + '/0/0/';
-        const url = api + pos + lod + channelPath;
+        const url = api + pos + lod + channelPath + '?gamma=1';
         return url;
     }
 

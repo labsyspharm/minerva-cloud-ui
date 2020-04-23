@@ -23,7 +23,7 @@ class ImageMetadata extends React.Component {
         if (this.props.metadata) {
             pixels = this.props.metadata.pixels;
             pyramid = this.props.metadata.image.pyramid_levels;
-            channels = this.props.metadata.pixels.channels.map(c => c.Name).join(', ');
+            channels = this.props.metadata.pixels.channels.map(c => c.Name || c.ID).join(', ');
             dimensions = pixels.SizeX + ' x ' + pixels.SizeY + ' x ' + pixels.SizeZ;
         }
         return (

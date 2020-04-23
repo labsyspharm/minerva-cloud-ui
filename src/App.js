@@ -37,6 +37,8 @@ class App extends React.Component {
             cognitoUser.getSession((err, session) => {
                 if (err) {
                     alert(err.message || JSON.stringify(err));
+                    cognitoUser.signOut();
+                    this.logoutSuccess();
                     return;
                 }
                 this.loginSuccess(cognitoUser);

@@ -21,7 +21,7 @@
 }
 
 .navigator {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.4);
     max-width: 25vw;
     position: fixed;
     float: left;
@@ -32,10 +32,11 @@
     scrollbar-color: dark;
     z-index: 1000;
     padding: 10px;
+    border-radius: 5px;
 }
 
 .metadata {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.4);
     width: 300px;
     position: fixed;
     right: 10px;
@@ -43,6 +44,7 @@
     margin-top: 10px;
     margin-right: 10px;
     padding: 10px;
+    border-radius: 5px;
 }
 
 .customContextMenu {

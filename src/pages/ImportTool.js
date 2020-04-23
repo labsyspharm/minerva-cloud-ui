@@ -17,6 +17,7 @@ const STATUS_UPLOADING = 1;
 const STATUS_SYNCING = 2;
 const STATUS_EXTRACTING = 3;
 const STATUS_FINISHED = 4;
+const STATUS_ERROR = 99;
 
 class ImportTool extends React.Component {
 
@@ -164,6 +165,8 @@ class ImportTool extends React.Component {
                     this.setState({ status: STATUS_SYNCING });
                     this.setImportComplete(importUuid);
                     this.pollImportFilesets(importUuid);
+                }).catch(err => {
+                    this.setState({ status: STATUS_ERROR });
                 });
         });
     }
@@ -194,7 +197,10 @@ class ImportTool extends React.Component {
                     }
                 })
                 .send(function (err, data) {
-                    console.log(err, data);
+                    if (err) {
+                        console.error(err);
+                        reject(err);
+                    }
                     resolve(data);
                 });
         });
@@ -370,6 +376,11 @@ class ImportTool extends React.Component {
             finishedStatusText = 'Import finished!';
             buttonText = "SUCCESS";
             buttonClass += "btn-success";
+        }
+        if (this.state.status == STATUS_ERROR) {
+            uploadStatusText = 'Error uploading';
+            buttonText = "ERROR";
+            buttonClass += "btn-error";
         }
         let omeTif = this.state.selectedFile.name.indexOf('.ome.tif') !== -1;
         let rareCyte = this.state.selectedFile.name.indexOf('.rcpnl') !== -1;

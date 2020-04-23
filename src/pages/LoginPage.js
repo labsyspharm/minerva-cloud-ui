@@ -20,6 +20,7 @@ class LoginPage extends React.Component {
             loginSpinner: false,
             showLoginForm: true,
             showPasswordChange: false,
+            showPasswordReset: false,
             password: null,
             passwordConfirmation: null,
             forcedPasswordResponse: null
@@ -30,6 +31,8 @@ class LoginPage extends React.Component {
         this.enterPressed = this.enterPressed.bind(this);
         this.forgotPassword = this.forgotPassword.bind(this);
         this.anonymousLogin = this.anonymousLogin.bind(this);
+        this.resetPassword = this.resetPassword.bind(this);
+        this.showForm = this.showForm.bind(this);
     }
 
     changePassword() {
@@ -46,7 +49,7 @@ class LoginPage extends React.Component {
             onSuccess: (data, cognitoUser) => this.passwordChallengeSuccess(data, cognitoUser),
             onFailure: err => {
                 console.error(err);
-                this.setState({warning: 'Password must contain one lowercase, uppercase, number and special character.'});
+                this.setState({warning: 'Password minimum length is 8 and it must contain one lowercase, uppercase and number.'});
             }
           });
     }
@@ -97,12 +100,12 @@ class LoginPage extends React.Component {
             }).catch(err => {
                 this.setState({loginSpinner: false});
                 if (err.fields && err.required) {
-                    this.setState({showLoginForm: false, showPasswordChange: true, 
+                    this.showForm('change');
+                    this.setState({ 
                                 forcedPasswordResponse: err,
                                 warning: 'You must update your password before continuing.',
                                 cognitoUser: cognitoUser
                             });
-                    
                 } else {
                     console.error(err);
                     this.setState({warning: 'Invalid Email or Password.'});
@@ -118,8 +121,19 @@ class LoginPage extends React.Component {
         this.props.loginSuccess(cognitoUser, true);
     }
 
-    showLoginForm() {
-        this.setState({showPasswordChange: false, showLoginForm: true, warning: ''});
+    showForm(formName) {
+        this.setState({showLoginForm: false, showPasswordChange: false, showPasswordReset: false, warning: ''});
+        switch (formName) {
+            case 'login':
+                this.setState({showLoginForm: true});
+                break;
+            case 'change':
+                this.setState({showPasswordChange: true});
+                break;
+            case 'reset':
+                this.setState({showPasswordReset: true});
+                break;
+        }
     }
 
     enterPressed(evt) {
@@ -141,11 +155,38 @@ class LoginPage extends React.Component {
         cognitoUser.forgotPassword({
             onSuccess: (result) => {
                 console.log('call result: ' + result);
-                this.setState({warning: 'You have been sent an email which contains instructions how to reset your password.'});
+                this.setState({warning: 'You have been sent an email which contains verification code to reset your password.'});
+                this.showForm('reset');
             },
             onFailure: (err) => {
                 alertify.error(err.message);
             }
+        });
+    }
+
+    resetPassword() {
+        if (!this.state.verificationCode) {
+            alertify.error("Please enter your verification code first.");
+            return;
+        }
+        if (this.state.password !== this.state.passwordConfirmation) {
+            this.setState({warning: 'New password and confirmation do not match.'});
+            return;
+        }
+        let cognitoUser = new CognitoUser({
+            Username: this.state.username,
+            Pool: this.props.userPool
+        });
+        let self = this;
+        cognitoUser.confirmPassword(this.state.verificationCode, this.state.password, {
+            onFailure(err) {
+                alertify.error(err.message);
+            },
+            onSuccess() {
+                alertify.message('Please login with your new password.');
+                self.showForm('login');
+                self.setState({warning: 'You can now sign in with your new password.'});
+            },
         });
     }
 
@@ -154,6 +195,7 @@ class LoginPage extends React.Component {
             <div className="loginContainer">
                 { this.state.showLoginForm ? this.renderLoginForm() : null }
                 { this.state.showPasswordChange ? this.renderPasswordChange() : null }
+                { this.state.showPasswordReset ? this.renderPasswordReset() : null }
                 { this.state.warning ? (
                     <div className="alert alert-warning mt-3" role="alert">
                         {this.state.warning}
@@ -197,7 +239,7 @@ class LoginPage extends React.Component {
         return (
         <form>
             <h3 className="h3 mb-3">
-                <a className="float-left" href="#" onClick={() => this.showLoginForm()}><FontAwesomeIcon icon={faBackward} /></a>
+                <a className="float-left" href="#" onClick={() => this.showForm('login')}><FontAwesomeIcon icon={faBackward} /></a>
                 Update Password
             </h3>
             <div className="loginForm">
@@ -213,6 +255,31 @@ class LoginPage extends React.Component {
             </div>
         </form>
         );
+    }
+
+    renderPasswordReset() {
+        return (
+            <form>
+                <h3 className="h3 mb-3">
+                    <a className="float-left" href="#" onClick={() => this.showForm('login')}><FontAwesomeIcon icon={faBackward} /></a>
+                    Reset Password
+                </h3>
+                <div className="loginForm">
+                <div className="form-group">
+                    <input type="number" className="form-control" placeholder="Verification code" id="code" name="verificationCode" onChange={this.handleChange} aria-describedby="emailHelp"/>
+                </div>
+                <div className="form-group">
+                    <input type="password" className="form-control" placeholder="New Password" id="password" name="password" onChange={this.handleChange} aria-describedby="emailHelp"/>
+                </div>
+                <div className="form-group">
+                    <input type="password" className="form-control" placeholder="New Password (confirmation)" id="password" name="passwordConfirmation" onChange={this.handleChange} aria-describedby="emailHelp"/>
+                </div>
+                <button type="button" className="btn form-control btn-primary" onClick={this.resetPassword}>Reset Password
+                    { this.state.loginSpinner ? <FontAwesomeIcon className="float-right" icon={faSpinner} spin /> : null }
+                </button>
+                </div>
+            </form>
+            );
     }
 }
 
