@@ -155,6 +155,7 @@ class MinervaClient {
     }
 
     apiFetch(method, route, config = {}) {
+        console.log(method, route, config);
         if (!this.currentUser) {
             console.warn("Tried to call apiFetch but no current session available.");
             return Promise.reject();
@@ -191,12 +192,19 @@ class MinervaClient {
         if (this.guest) {
             return this._fetch(url, args, 'Anonymous', headers, binary);
         } else {
-            return this.currentUser.getSession((err, session) => {
+            
+            let session = this.currentUser.getSession((err, session) => {
                 if (err) {
                     console.error(err);
+                    return Promise.reject("Error in getSession");
                 }
                 return this._fetch(url, args, session.idToken.jwtToken, headers, binary);
             });
+            if (!session) {
+                console.error("Session is undefined: ", session);
+                return Promise.reject("Session is undefined");
+            }
+            return session;
         }
     }
 
@@ -241,6 +249,10 @@ class MinervaClient {
 
         return new Promise((resolve, reject) => {
             this.currentUser.getSession((err, session) => {
+                if (err) {
+                    console.error(err);
+                    return Promise.reject("Error in getSession");
+                }
                 resolve('Bearer ' + session.idToken.jwtToken);
             });
         });

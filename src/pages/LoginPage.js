@@ -46,7 +46,7 @@ class LoginPage extends React.Component {
         userAttributes.preferred_username = userAttributes.name;
         delete userAttributes.email_verified;
         this.state.cognitoUser.completeNewPasswordChallenge(this.state.password, userAttributes, {
-            onSuccess: (data, cognitoUser) => this.passwordChallengeSuccess(data, cognitoUser),
+            onSuccess: (data) => this.passwordChallengeSuccess(data),
             onFailure: err => {
                 console.error(err);
                 this.setState({warning: 'Password minimum length is 8 and it must contain one lowercase, uppercase and number.'});
@@ -54,11 +54,11 @@ class LoginPage extends React.Component {
           });
     }
 
-    passwordChallengeSuccess(data, cognitoUser) {
+    passwordChallengeSuccess(data) {
         this.setState({ loggedIn: true, loggedInUser: this.state.username });
         localStorage.setItem('loggedInUser', this.state.username);
         alertify.success("Login success", 2);
-        this.props.loginSuccess(cognitoUser);
+        this.props.loginSuccess(this.state.cognitoUser);
     }
 
     handleChange = evt => {

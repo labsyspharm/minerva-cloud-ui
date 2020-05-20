@@ -27,6 +27,8 @@ class ImportTool extends React.Component {
         this.state = {
             selectedFile: null,
             progress: 0,
+            uploadSpeed: 0,
+            uploadEta: 0,
             extractProgress: 0,
             uploading: false,
             extracting: false,
@@ -186,14 +188,28 @@ class ImportTool extends React.Component {
                 credentials: awsCredentials
             });
             let prevPercentage = 0;
+            const start = performance.now();
             console.log('Uploading image to S3...');
 
             s3.upload({ Bucket: bucket, Key: key, Body: file.file })
                 .on('httpUploadProgress', (progress) => {
                     let percentage = Math.floor(progress.loaded / progress.total * 100);
+                    let elapsed = performance.now() - start;
+                    let speed = (progress.loaded / 1000) / elapsed;
+                    if (!speed) {
+                        speed = 0;
+                    }
+                    this.setState({ uploadSpeed: speed });
+
                     if (percentage > prevPercentage) {
                         prevPercentage = percentage;
-                        this.setState({ progress: percentage });
+                        let secondsLeft = null;
+                        if (speed > 0) {
+                            let bytesLeft = progress.total - progress.loaded;
+                            secondsLeft = (bytesLeft / 1000000) / speed;
+                        }
+                        this.setState({ progress: percentage,
+                            uploadEta: secondsLeft });
                     }
                 })
                 .send(function (err, data) {
@@ -349,15 +365,28 @@ class ImportTool extends React.Component {
             buttonClass += "btn-primary"
         }
         if (this.state.status === STATUS_UPLOADING) {
-            uploadStatusText = this.state.progress + '%';
-            uploadStatusText = 'Uploading file ' + uploadStatusText;
-            syncingStatusText = 'Don\'t close browser!';
-            buttonText = "Processing import...";
+            let uploadEtaText = "Time left: ";
+            if (this.state.uploadEta > 3600) {
+                let hours = Math.floor(this.state.uploadEta / 3600);
+                let minutes = this.state.uploadEta - (3600 * hours);
+                uploadEtaText += hours + "h " + minutes + "min"
+            } else if (this.state.uploadEta > 60) {
+                let minutes = Math.floor(this.state.uploadEta / 60);
+                let seconds = Math.floor(this.state.uploadEta) - (60 * minutes);
+                uploadEtaText += minutes + "min " + seconds + "s"
+            } else if (this.state.uploadEta > 0) {
+                uploadEtaText += Math.floor(this.state.uploadEta) + "s"
+            }
+            
+            let uploadSpeedText = this.state.uploadSpeed.toFixed(2) + ' MB/s'
+            uploadStatusText =  "Speed: " + uploadSpeedText + ' - ' + uploadEtaText;
+            syncingStatusText = 'Don\'t close the browser!';
+            buttonText = "Uploading image...";
             buttonClass += "btn-info";
         }
         if (this.state.status === STATUS_SYNCING) {
             uploadStatusText = 'Uploading finished';
-            syncingStatusText = 'Syncing EFS...';
+            syncingStatusText = 'Processing upload...';
             buttonText = "Processing import...";
             buttonClass += "btn-info";
         }
@@ -390,14 +419,18 @@ class ImportTool extends React.Component {
         return (
             <div className="card bg-dark">
                 <div className="card-body">
-                    <h5 className="card-title">{this.state.selectedFile.name}</h5>
+                    <h5 className="card-title">{this.state.selectedFile.name} ({this.state.selectedFile.sizeReadable})</h5>
                     <p>
                     { rareCyte ? <FontAwesomeIcon icon={faMicroscope}/> : null}
                     { omeTif ? <img className="fileIcon" src="ome.svg" alt="File Icon" /> : null}
                     </p>
-                    <p>{this.state.selectedFile.sizeReadable}</p>
                     <p><strong>{fileWarning}</strong></p>
                     <p><strong>{uploadStatusText}</strong></p>
+                    { this.state.status !== STATUS_INITIAL ? 
+                        <p>
+                            <progress max="100" value={this.state.progress}></progress>
+                        </p>
+                        : null }
                     <p><strong>{syncingStatusText}</strong></p>
                     <p><strong>{extractingStatusText}</strong></p>
                     <p><strong>{finishedStatusText}</strong></p>

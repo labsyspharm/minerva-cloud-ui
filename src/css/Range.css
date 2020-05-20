@@ -1,0 +1,12 @@
+.channel-color-picker {
+    position: absolute;
+    right: 300px;
+}
+
+.custom-slider .MuiSlider-colorPrimary {
+    color: #eeeeee;
+}
+
+.custom-slider .MuiSlider-valueLabel {
+    color: #333;
+}

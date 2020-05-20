@@ -33,9 +33,8 @@ class ImageMetadata extends React.Component {
                 <tr><td className="align-top">Uuid:</td><td><span id="imageMetadataUuid">{this.props.image.uuid}</span>&nbsp;<button onClick={this.copyUuidToClipboard}><FontAwesomeIcon icon={faCopy} /></button></td></tr>
                 <tr><td className="align-top">Dimensions:</td><td>{dimensions} </td></tr>
                 <tr><td className="align-top">Pyramid:</td><td>{pyramid}</td></tr>
-                <tr><td className="align-top">Channels:</td><td>
-                {channels}
-                </td></tr>
+                <tr><td className="align-top">Channels:</td>
+                    <td className="metadata-channels">{channels}</td></tr>
                 </tbody>
             </table>
         );

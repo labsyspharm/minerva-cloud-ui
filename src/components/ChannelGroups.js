@@ -23,7 +23,7 @@ class ChannelGroups extends React.Component {
 
     select(item, index) {
         this.setState({selected: index});
-        this.props.onChannelGroupSelected(item.uuid);
+        this.props.onChannelGroupSelected(item);
     }
 
     addChannelGroup() {
@@ -31,8 +31,10 @@ class ChannelGroups extends React.Component {
         if (!obj) {
             return;
         }
+        alertify.success('Saving channel group');
         Client.createRenderingSettings(this.props.node.uuid, obj).then(response => {
             alertify.success('Created new channel group');
+            this.props.onChannelGroupSelected(response.groups[0]);
         }).catch(err => {
             if (err.status === 403) {
                 alertify.error('You don\'t have sufficient permissions to add new channel groups to this image.');
@@ -44,12 +46,26 @@ class ChannelGroups extends React.Component {
     }
 
     showModal() {
-        this.setState({channelGroupsJson: ''});
+        let group = {
+                "label": this.props.selectedItem.label,
+                "channels": this.props.channels
+            }
+        if (this.props.selectedItem.uuid && this.props.selectedItem.uuid !== '00000000-0000-0000-0000-000000000000') {
+            group.uuid = this.props.selectedItem.uuid;
+        }
+        let groups = {
+            "groups": [ group ]
+        }
+        this.setState({channelGroupsJson: JSON.stringify(groups, null, 2)});
     }
 
     render() {
         if (!this.props.groups) {
             return null;
+        }
+        let dropdownLabel = 'Select group';
+        if (this.props.selectedItem) {
+            dropdownLabel = this.props.selectedItem.label;
         }
         return (
             <div className="btn-group-toggle" data-toggle="buttons">
@@ -58,21 +74,24 @@ class ChannelGroups extends React.Component {
                     &nbsp;
                     { !this.props.guest ?
                         <button type="button" className="btn btn-success" onClick={this.showModal} data-toggle="modal" data-target="#addChannelGroupModal">
-                            <FontAwesomeIcon icon={faPlus} />
+                            Save
                         </button>
                     : null }
                 </h5>
-                {this.props.groups.map((item, index) => {
-                    let clazz = "btn btn-secondary btn-sm btn-block";
-                    if (this.state.selected === index) {
-                        clazz += " active";
-                    }
-                    return (
-                        <label className={clazz} key={index}>
-                            <input type="checkbox" onClick={() => this.select(item, index)}/>{item.label}
-                        </label>
-                        );
-                    })}
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        { dropdownLabel }
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        {this.props.groups.map((item, index) => {
+                        return (
+                            <a className="dropdown-item" key={index} href="#" onClick={() => this.select(item, index)}>
+                                {item.label}
+                            </a>
+                            );
+                        })}
+                    </div>
+                </div>
                     
             </div>
         );
@@ -97,7 +116,6 @@ class ChannelGroups extends React.Component {
                     </code>
                 </div>
                 <div className="modal-footer">
-                    <button type="button" className="btn btn-secondary" onClick={() => this.showExample()}>Show example</button>
                     <button type="button" className="btn btn-primary" onClick={this.addChannelGroup} data-dismiss="modal">Save changes</button>
                     <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
@@ -111,14 +129,28 @@ class ChannelGroups extends React.Component {
         let example = {
             "groups": [
                 {
-                    "label": "Group_Label",
+                    "label": "Channel Group Name",
                     "channels": [
                         {
                             "id": 0,
-                            "label": "Channel_Label",
+                            "label": "DNA",
+                            "color": "0000ff",
+                            "min": 0.05,
+                            "max": 0.95
+                        },
+                        {
+                            "id": 1,
+                            "label": "Channel 1",
                             "color": "ff0000",
-                            "min": 0.1,
-                            "max": 0.9
+                            "min": 0.01,
+                            "max": 0.3
+                        },
+                        {
+                            "id": 2,
+                            "label": "Channel 2",
+                            "color": "ffffff",
+                            "min": 0.01,
+                            "max": 0.3
                         }
                     ]
                 }

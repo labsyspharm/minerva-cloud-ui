@@ -9,3 +9,27 @@
     width: 6rem;
     height: 6rem;
 }
+
+progress {
+    border-radius: 5px; 
+    width: 80%;
+    height: 25px;
+  }
+
+progress::-webkit-progress-bar {
+    background-color: #eee;
+    border-radius: 0px;
+}
+
+progress::-webkit-progress-value {
+    background-color: #007bff;
+}
+
+progress::-moz-progress-bar {
+    background-color: #eee;
+    border-radius: 0px;
+}
+
+progress::-moz-progress-value {
+    background-color: #007bff;
+}

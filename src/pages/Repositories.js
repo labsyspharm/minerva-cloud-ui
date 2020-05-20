@@ -5,6 +5,7 @@ import ChannelGroups from '../components/ChannelGroups';
 import '../css/Repository.css';
 import ImageMetadata from '../components/ImageMetadata';
 import OSDViewer from '../components/OSDViewer';
+import RenderingSettings from '../components/RenderingSettings';
 
 class Repositories extends React.Component {
     constructor(props) {
@@ -16,48 +17,216 @@ class Repositories extends React.Component {
             imageSrc: null,
             imageDetails: null,
             previewSpinner: false,
-            osdMetadata: null
+            osdMetadata: null,
+            channels: [],
+            channelGroups: [],
+            selectedChannelGroup: null,
+            renderMode: 'renderTile',
+            ignoreRenderUpdate: false
         };
 
         this.select = this.select.bind(this);
         this.selectChannelGroup = this.selectChannelGroup.bind(this);
+        this.onRenderingSettingsChanged = this.onRenderingSettingsChanged.bind(this);
+        this.onChannelDeleted = this.onChannelDeleted.bind(this);
+        this.onChannelAdded = this.onChannelAdded.bind(this);
     }
 
     select(node) {
-        this.setState({ selected: node });
+        let renderMode = this.props.guest ? 'prerenderedTile' : 'renderTile';
+        this.setState({ selected: node, channels: [], renderMode: renderMode });
 
         let image = node.data;
         
         let getImageResponse = Client.getImage(node.uuid);
         let getImageDimensionsResponse = Client.getImageDimensions(node.uuid);
+        console.log('getImageResponse: ', getImageResponse);
+        console.log('getImageDimensions: ', getImageDimensionsResponse);
 
         Promise.all([getImageResponse, getImageDimensionsResponse]).then(values => {
+            let imageResponse = values[0];
+            let dimensions = values[1];
 
-
-            let response = values[0];
+            if (!imageResponse) {
+                // FIXME - should not need this check, investigate why reponse in undefined
+                // when token has expired
+                return;
+            }
             let renderingSettings = [];
             let channelGroups = [];
-            if (response.included && response.included.rendering_settings && response.included.rendering_settings.length > 0) {
-                renderingSettings = response.included.rendering_settings[0];
-                channelGroups = response.included.rendering_settings;
+            if (!this.props.guest) {
+                // Guest mode does not support raw rendering, so add the default
+                // raw channel group only if logged in.
+                channelGroups.push(this._createRawChannelGroup(node.uuid, dimensions));
             }
 
-            response = values[1];
+            if (imageResponse.included && imageResponse.included.rendering_settings && imageResponse.included.rendering_settings.length > 0) {
+                renderingSettings = imageResponse.included.rendering_settings[0];
+                channelGroups.push(...imageResponse.included.rendering_settings);
+            }
+
+            let selectedChannelGroup = null;
+            if (channelGroups.length > 1 && !this.props.guest) {
+                selectedChannelGroup = channelGroups[1];
+                renderMode = 'prerenderedTile';
+            } else if (channelGroups.length > 0) {
+                selectedChannelGroup = channelGroups[0];
+            }
+
             let osdMetadata = {};
-            Object.assign(osdMetadata, response.data);
+            Object.assign(osdMetadata, dimensions.data);
             osdMetadata.image = image;
-            osdMetadata.renderingSettingsUuid = renderingSettings.uuid;
-            this.setState({imageDetails: osdMetadata, osdMetadata: osdMetadata, channelGroups: channelGroups});
+            this.setState({imageDetails: osdMetadata, 
+                osdMetadata: osdMetadata, 
+                channelGroups: channelGroups,
+                selectedChannelGroup: selectedChannelGroup,
+                renderMode: renderMode,
+                channels: selectedChannelGroup.channels
+            });
 
         });
-
     }
 
-    selectChannelGroup(uuid) {
+    _createRawChannelGroup(imageUuid, dimensions=null) {
+        let channels = [];
+        let colors = ['ffffff', 'ff0000', '00ff00', '0000ff'];
+        if (dimensions) {
+            // Try to show channels 4-7 by default.
+            // If this fails it's okay, we can just show the DNA channel
+            try {
+                for (let i=0; i<=3; i++) {
+                    let label = dimensions.data.pixels.channels[i+4].Name;
+                    let max = i == 0 ? 1 : 0.33;
+                    channels.push(
+                        {
+                            label: label,
+                            id: i+4,
+                            min: 0.01,
+                            max: max,
+                            color: colors[i]
+                        }
+                    );
+                }
+                
+            } catch (err) {}
+        }
+        if (channels.length === 0) {
+            channels = [
+                {
+                    label: 'DNA',
+                    id: 0,
+                    min: 0,
+                    max: 1,
+                    color: 'ffffff'
+                }
+            ];
+        }
+        return {
+            image_uuid: imageUuid,
+            label: 'Raw',
+            uuid: '00000000-0000-0000-0000-000000000000',
+            channels: channels,
+            isRawRender: true
+        };
+    }
+
+    selectChannelGroup(item) {
         let osdMetadata = {};
         Object.assign(osdMetadata, this.state.osdMetadata);
-        osdMetadata.renderingSettingsUuid = uuid;
         this.setState({osdMetadata: osdMetadata});
+
+        let channels = [];
+        for (let channel of item.channels) {
+            let newChannel = {};
+            Object.assign(newChannel, channel);
+            channels.push(newChannel);
+        }
+        if (item.uuid !== '00000000-0000-0000-0000-000000000000') {
+            item.isRawRender = false;
+        }
+        this.setState({channels: channels, selectedChannelGroup: item});
+    }
+
+    onRenderingSettingsChanged(updatedChannelGroup, updatedChannel, update=false) {
+        let updatedChannels = [...this.state.channels];
+        let index = -1;
+        updatedChannels.map((ch, i) => {
+            if (ch.id === updatedChannel.id) {
+                index = i;
+            }
+        })
+        if (index !== -1) {
+            updatedChannels[index] = updatedChannel;
+        }
+        updatedChannelGroup.isRawRender = true;
+        this.setState({channels: updatedChannels, 
+            ignoreRenderUpdate: !update
+        });
+    }
+
+    onChannelDeleted(channelGroup, channel) {
+        let updatedChannels = this.state.channels.filter((value, index, arr) => {
+            return value.id !== channel.id;
+        });
+        channelGroup.isRawRender = true;
+        channelGroup.channels = updatedChannels;
+        this.setState({channels: updatedChannels, 
+            ignoreRenderUpdate: false,
+            selectedChannelGroup: channelGroup
+        });
+    }
+
+    onChannelAdded(index) {
+        let usedIds = [];
+        this.state.channels.map((channel, idx) => {
+            usedIds.push(channel.id);
+        });
+        if (usedIds.includes(index)) {
+            return;
+        }
+        let i=0;
+        let updatedChannels = [...this.state.channels];
+
+        if (!index) {
+            for (let i=0; i<this.state.imageDetails.pixels.channels.length; i++) {
+                if (!usedIds.includes(i)) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        // Default to DNA channel values
+        let color = 'ffffff';
+        let min = 0;
+        let max = 1;
+        if (index % 4 !== 0) {
+            // Other than DNA channel
+            let colorValues = ['00', '80', 'ff'];
+            const red = colorValues[Math.floor(Math.random() * colorValues.length)];
+            const green =  colorValues[Math.floor(Math.random() * colorValues.length)];
+            const blue = colorValues[Math.floor(Math.random() * colorValues.length)];
+            color = red + green + blue;
+            if (color === '000000') {
+                color = 'ffffff';
+            }
+            min = 0.01;
+            max = 0.4;
+        }
+
+        updatedChannels.push(
+            {
+                label: this.state.imageDetails.pixels.channels[index].Name,
+                id: index,
+                min: min,
+                max: max,
+                color: color
+            });
+
+        this.state.selectedChannelGroup.channels = updatedChannels;
+        this.setState({channels: updatedChannels, 
+            ignoreRenderUpdate: false,
+            selectedChannelGroup: this.state.selectedChannelGroup
+        });
     }
 
     render() {
@@ -71,7 +240,11 @@ class Repositories extends React.Component {
                 </div>
                 <div className="viewer overflow-hidden">
                     
-                    <OSDViewer metadata={this.state.osdMetadata} />
+                    <OSDViewer metadata={this.state.osdMetadata} 
+                        activeGroup={this.state.selectedChannelGroup}
+                        channelGroups={this.state.channelGroups}
+                        channels={this.state.channels} 
+                        ignoreRenderUpdate={this.state.ignoreRenderUpdate} />
                     
                 </div>
                 <div className="metadata">
@@ -79,7 +252,21 @@ class Repositories extends React.Component {
                     <ImageMetadata metadata={this.state.imageDetails} image={this.state.selected} />
                     <hr/>
                     
-                    <ChannelGroups groups={this.state.channelGroups} onChannelGroupSelected={this.selectChannelGroup} node={this.state.selected} guest={this.props.guest}/>
+                    <ChannelGroups groups={this.state.channelGroups} 
+                        onChannelGroupSelected={this.selectChannelGroup} 
+                        node={this.state.selected} 
+                        selectedItem={this.state.selectedChannelGroup}
+                        guest={this.props.guest}
+                        channels={this.state.channels}
+                    />
+                    <div className="rendering-settings">
+                        <RenderingSettings channelGroup={this.state.selectedChannelGroup} 
+                            metadata={this.state.imageDetails}
+                            handleChange={this.onRenderingSettingsChanged} 
+                            onDelete={this.onChannelDeleted}
+                            onAdd={this.onChannelAdded}
+                            guest={this.props.guest}/>
+                    </div>
                 </div>
             </div>
 
