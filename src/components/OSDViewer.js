@@ -36,7 +36,7 @@ class OSDViewer extends React.Component {
                 maxImageCacheCount: 500
             });
             viewer.addHandler('tile-load-failed', (e) => {
-                console.error(e);
+                // TODO investigate why there's "Image load aborted" errors when changing image
             });
             this.setState({ viewer: viewer });
         }
@@ -71,7 +71,7 @@ class OSDViewer extends React.Component {
                     this.createTileSource(this.props.channelGroups, true);
                 }
             }
-            else if (this.props.activeGroup.isRawRender && (!this.rendering || !this.props.ignoreRenderUpdate)) {
+            else if (this.props.activeGroup.isRawRender && (!this.rendering && !this.props.ignoreRenderUpdate)) {
                 // Image and active channel group are the same
                 // Channel rendering settings have been changed
 
@@ -192,9 +192,7 @@ class OSDViewer extends React.Component {
                             this.state.viewer.world.removeItem(oldItem);
                         }
                         this.tileSources[channelGroup.uuid] = evt.item;
-                        setTimeout(() => {
-                            this.rendering = false;
-                        }, 50);
+                        this.rendering = false;
                       }
                     
                     if (tiledImage.getFullyLoaded()) {
@@ -233,6 +231,10 @@ class OSDViewer extends React.Component {
                 paths.push(path);
             }
             channelPath = paths.join('/');
+            if (channelPath.length === 0) {
+                // Zero channels are enabled
+                return '';
+            }
 
             const api = Client.baseUrl + '/image/' + this.props.metadata.image.uuid + '/render-tile/';
             const lod = (this.props.metadata.image.pyramid_levels - level  ) + '/';

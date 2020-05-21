@@ -60,6 +60,7 @@ class RepositoryTree extends Component {
             this.setState({ rootNode: rootNode, loading: false });
         }).catch(err => {
             console.error(err);
+            this.setState({ loading: false });
         });
     }
 
@@ -84,6 +85,9 @@ class RepositoryTree extends Component {
             node.expanded = true;
             onFinished();
             this.forceUpdate();
+        }).catch(err => {
+            console.error(err);
+            onFinished();
         });
     }
 
