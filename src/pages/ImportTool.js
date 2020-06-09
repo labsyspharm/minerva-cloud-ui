@@ -322,8 +322,8 @@ class ImportTool extends React.Component {
                 <div className="modal-body text-dark">
                     <div>
                                 <div className="card-body">
-                                <p className="h5 card-title">You will have Admin permissions for the new repository.</p>
-                                <p className="h5">Other users won't have access to the repository, unless explicitly granted.</p>
+                                <p className="h6 card-title">You will have Admin permissions for the new repository.</p>
+                                <p className="h6">Other users won't have access to the repository, unless explicitly granted.</p>
                                 <p className="mt-3">
                                 <input type="text" className="" id="repositoryName" name="newRepositoryName" ref={this.newRepositoryName} placeholder="Enter repository name" />&nbsp;
                                 </p>

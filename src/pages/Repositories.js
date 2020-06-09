@@ -30,6 +30,7 @@ class Repositories extends React.Component {
         this.onRenderingSettingsChanged = this.onRenderingSettingsChanged.bind(this);
         this.onChannelDeleted = this.onChannelDeleted.bind(this);
         this.onChannelAdded = this.onChannelAdded.bind(this);
+        this.autoSettings = this.autoSettings.bind(this);
     }
 
     select(node) {
@@ -89,18 +90,24 @@ class Repositories extends React.Component {
 
     _createRawChannelGroup(imageUuid, dimensions=null) {
         let channels = [];
-        let colors = ['ffffff', 'ff0000', '00ff00', '0000ff'];
+        let colors = ['0000ff', 'ff0000', 'ffffff', '00ff00',
+                      '0000ff', 'ff0000', 'ff0000', '00ff00',
+                      '0000ff', 'ff0000', 'ffffff', '00ff00',
+                      '0000ff', 'ff0000', 'ffffff', '00ff00',
+                      '0000ff', 'ff0000', 'ffffff', '00ff00'
+        ];
         if (dimensions) {
-            // Try to show channels 4-7 by default.
+            // Try to show channels 0, 6, 10, 11 by default.
+            let defaultChannels = [0, 6, 10, 11];
             // If this fails it's okay, we can just show the DNA channel
             try {
-                for (let i=0; i<=3; i++) {
-                    let label = dimensions.data.pixels.channels[i+4].Name;
+                for (let i of defaultChannels) {
+                    let label = dimensions.data.pixels.channels[i].Name;
                     let max = i == 0 ? 1 : 0.33;
                     channels.push(
                         {
                             label: label,
-                            id: i+4,
+                            id: i,
                             min: 0.01,
                             max: max,
                             color: colors[i]
@@ -229,6 +236,26 @@ class Repositories extends React.Component {
         });
     }
 
+    autoSettings(res) {
+        console.log(res);
+        let updatedChannels = [...this.state.channels];
+        for (let origChannel of updatedChannels) {
+            for (let histChannel of res.channels) {
+                if (histChannel.id == origChannel.id) {
+                    origChannel.min = histChannel.min;
+                    origChannel.max = histChannel.max;
+                    continue;
+                }
+            }
+        }
+        this.state.selectedChannelGroup.channels = updatedChannels;
+        this.state.selectedChannelGroup.isRawRender = true;
+        this.setState({channels: updatedChannels, 
+            ignoreRenderUpdate: false,
+            selectedChannelGroup: this.state.selectedChannelGroup
+        });
+    }
+
     render() {
         if (!this.props.loggedIn) {
             return null;
@@ -247,29 +274,40 @@ class Repositories extends React.Component {
                         ignoreRenderUpdate={this.state.ignoreRenderUpdate} />
                     
                 </div>
-                <div className="metadata">
-                    <h5 className="h5">METADATA</h5>
-                    <ImageMetadata metadata={this.state.imageDetails} image={this.state.selected} />
-                    <hr/>
-                    
-                    <ChannelGroups groups={this.state.channelGroups} 
-                        onChannelGroupSelected={this.selectChannelGroup} 
-                        node={this.state.selected} 
-                        selectedItem={this.state.selectedChannelGroup}
-                        guest={this.props.guest}
-                        channels={this.state.channels}
-                    />
-                    <div className="rendering-settings">
-                        <RenderingSettings channelGroup={this.state.selectedChannelGroup} 
-                            metadata={this.state.imageDetails}
-                            handleChange={this.onRenderingSettingsChanged} 
-                            onDelete={this.onChannelDeleted}
-                            onAdd={this.onChannelAdded}
-                            guest={this.props.guest}/>
-                    </div>
-                </div>
+                { this.renderRightHandPanel() }
             </div>
 
+        );
+    }
+
+    renderRightHandPanel() {
+        if (!this.state.selected) {
+            return null;
+        }
+        return (
+        <div className="metadata">
+            <h5 className="h5">METADATA</h5>
+            <ImageMetadata metadata={this.state.imageDetails} image={this.state.selected} />
+            <hr/>
+            
+            <ChannelGroups groups={this.state.channelGroups} 
+                onChannelGroupSelected={this.selectChannelGroup} 
+                node={this.state.selected} 
+                selectedItem={this.state.selectedChannelGroup}
+                guest={this.props.guest}
+                channels={this.state.channels}
+                image={this.state.selected}
+                onAutoSettings={this.autoSettings}
+            />
+            <div className="rendering-settings">
+                <RenderingSettings channelGroup={this.state.selectedChannelGroup} 
+                    metadata={this.state.imageDetails}
+                    handleChange={this.onRenderingSettingsChanged} 
+                    onDelete={this.onChannelDeleted}
+                    onAdd={this.onChannelAdded}
+                    guest={this.props.guest}/>
+            </div>
+        </div>
         );
     }
 

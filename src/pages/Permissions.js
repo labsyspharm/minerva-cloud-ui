@@ -146,8 +146,8 @@ class Permissions extends React.Component {
     }
 
     setRepositoryPublic(isPublic) {
-        let message = isPublic ? 'Making the repository public allows everyone to view the images. Are you sure?'
-                               : 'Are you sure you want to hide this repository from the public?'
+        let message = isPublic ? 'Making the repository public allows everyone to view the images, including guests. Are you sure?'
+                               : 'Are you sure you want to make the repository private?'
         let confirmation = isPublic ? this.state.repository.name + ' >> Public'
                                     : this.state.repository.name + ' >> Private';
         alertify.confirm(confirmation, message,

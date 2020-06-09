@@ -154,6 +154,11 @@ class MinervaClient {
         return this.apiFetch('POST', `/image/${uuid}/rendering_settings`, { body: json });
     }
 
+    getHistogram(uuid, channelsArray, threshold=0.000286) {
+        let channels = channelsArray.join(',');
+        return this.apiFetch('GET', `/image/${uuid}/histogram/${channels}?threshold=${threshold}`);
+    }
+
     apiFetch(method, route, config = {}) {
         console.log(method, route, config);
         if (!this.currentUser) {
@@ -164,7 +169,8 @@ class MinervaClient {
         let body = config.body;
         let binary = config.binary;
         const defaultHeaders = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         };
         let headers = { ...defaultHeaders, ...config.headers };
 

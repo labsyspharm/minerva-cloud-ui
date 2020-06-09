@@ -52,10 +52,6 @@ class ContextMenu extends React.Component {
         else if (nodeType ==='image') {
             return (
                 <span>
-                <a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'open')}>
-                    <FontAwesomeIcon className="mr-2" icon={faFolderOpen}/>
-                    Open in Minerva Story
-                </a>
                 {this.renderDeletedOrRestore()}
                 </span>
             )

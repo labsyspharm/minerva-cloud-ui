@@ -2,8 +2,9 @@ import React from 'react';
 import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
 import Client from '../MinervaClient';
+import Spinner from './Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faMagic } from '@fortawesome/free-solid-svg-icons'
 import '../css/ChannelGroups.css';
 
 class ChannelGroups extends React.Component {
@@ -14,11 +15,14 @@ class ChannelGroups extends React.Component {
         this.state = {
             selected: 0,
             modal: false,
-            channelGroupsJson: ''
+            channelGroupsJson: '',
+            autoSettingsSpinner: false,
+            threshold: 0.0002
         };
 
         this.showModal = this.showModal.bind(this);
         this.addChannelGroup = this.addChannelGroup.bind(this);
+        this.autoSettings = this.autoSettings.bind(this);
     }
 
     select(item, index) {
@@ -43,6 +47,18 @@ class ChannelGroups extends React.Component {
             }
             console.error(err);
         });
+    }
+
+    autoSettings() {
+        let channelsArray = this.props.channels.map(c => c.id);
+        Client.getHistogram(this.props.image.uuid, channelsArray, this.state.threshold).then(res => {
+            this.setState({autoSettingsSpinner: false});
+            this.props.onAutoSettings(res);
+        }).catch(err => {
+            console.error(err);
+            this.setState({autoSettingsSpinner: false});
+        });
+        this.setState({autoSettingsSpinner: true});
     }
 
     showModal() {
@@ -79,10 +95,10 @@ class ChannelGroups extends React.Component {
                     : null }
                 </h5>
                 <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         { dropdownLabel }
                     </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         {this.props.groups.map((item, index) => {
                         return (
                             <a className="dropdown-item" key={index} href="#" onClick={() => this.select(item, index)}>
@@ -91,6 +107,14 @@ class ChannelGroups extends React.Component {
                             );
                         })}
                     </div>
+                    <button className="btn btn-secondary float-right" type="button" onClick={this.autoSettings} disabled={this.state.autoSettingsSpinner}>
+                        { this.state.autoSettingsSpinner ? 
+                            <Spinner show={this.state.autoSettingsSpinner} />
+                            :
+                            <FontAwesomeIcon icon={faMagic} />
+                        }
+                        &nbsp;Auto
+                    </button>
                 </div>
                     
             </div>
