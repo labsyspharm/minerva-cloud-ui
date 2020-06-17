@@ -154,9 +154,9 @@ class MinervaClient {
         return this.apiFetch('POST', `/image/${uuid}/rendering_settings`, { body: json });
     }
 
-    getHistogram(uuid, channelsArray, threshold=0.000286) {
+    getAutoSettings(uuid, channelsArray, threshold=0.000286) {
         let channels = channelsArray.join(',');
-        return this.apiFetch('GET', `/image/${uuid}/histogram/${channels}?threshold=${threshold}`);
+        return this.apiFetch('GET', `/image/${uuid}/autosettings/${channels}?method=gaussian&threshold=${threshold}`);
     }
 
     apiFetch(method, route, config = {}) {

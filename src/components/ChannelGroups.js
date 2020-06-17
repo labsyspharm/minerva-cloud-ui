@@ -51,7 +51,7 @@ class ChannelGroups extends React.Component {
 
     autoSettings() {
         let channelsArray = this.props.channels.map(c => c.id);
-        Client.getHistogram(this.props.image.uuid, channelsArray, this.state.threshold).then(res => {
+        Client.getAutoSettings(this.props.image.uuid, channelsArray, this.state.threshold).then(res => {
             this.setState({autoSettingsSpinner: false});
             this.props.onAutoSettings(res);
         }).catch(err => {
