@@ -192,6 +192,7 @@ class LoginPage extends React.Component {
 
     render() {
         return (
+            <div className="loginPage">
             <div className="loginContainer">
                 { this.state.showLoginForm ? this.renderLoginForm() : null }
                 { this.state.showPasswordChange ? this.renderPasswordChange() : null }
@@ -201,6 +202,7 @@ class LoginPage extends React.Component {
                         {this.state.warning}
                     </div> ) 
                 : null }
+            </div>
             </div>
         );
     }
