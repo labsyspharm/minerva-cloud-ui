@@ -29,7 +29,7 @@ class ImageMetadata extends React.Component {
         return (
             <table className="imageDetails" cellPadding="5">
                 <tbody>
-                <tr><td className="align-top">Name:</td><td>{this.props.image.title}</td></tr>
+                <tr><td className="align-top">Name:</td><td>{this.props.image.name}</td></tr>
                 <tr><td className="align-top">Uuid:</td><td><span id="imageMetadataUuid">{this.props.image.uuid}</span>&nbsp;<button onClick={this.copyUuidToClipboard}><FontAwesomeIcon icon={faCopy} /></button></td></tr>
                 <tr><td className="align-top">Dimensions:</td><td>{dimensions} (XYZ)</td></tr>
                 <tr><td className="align-top">Pyramid:</td><td>{pyramid}</td></tr>

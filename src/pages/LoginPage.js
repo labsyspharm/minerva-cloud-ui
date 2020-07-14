@@ -58,7 +58,7 @@ class LoginPage extends React.Component {
         this.setState({ loggedIn: true, loggedInUser: this.state.username });
         localStorage.setItem('loggedInUser', this.state.username);
         alertify.success("Login success", 2);
-        this.props.loginSuccess(this.state.cognitoUser);
+        this.props.loginSuccess(this.state.cognitoUser, false, true);
     }
 
     handleChange = evt => {
@@ -96,7 +96,7 @@ class LoginPage extends React.Component {
             .then(response => {
                 this.setState({ loggedIn: true, loggedInUser: this.state.username, warning: null, loginSpinner: false });
                 localStorage.setItem('loggedInUser', this.state.username);
-                this.props.loginSuccess(cognitoUser);
+                this.props.loginSuccess(cognitoUser, false, true);
             }).catch(err => {
                 this.setState({loginSpinner: false});
                 if (err.fields && err.required) {
@@ -118,7 +118,7 @@ class LoginPage extends React.Component {
             Username: '00000000-0000-0000-0000-000000000000',
             Pool: this.props.userPool
         });
-        this.props.loginSuccess(cognitoUser, true);
+        this.props.loginSuccess(cognitoUser, true, true);
     }
 
     showForm(formName) {
@@ -208,7 +208,9 @@ class LoginPage extends React.Component {
     renderLoginForm() {
         return (
         <form>
-            <h2 className="h2 mb-3">MINERVA</h2>
+            <h2 className="h2 mb-3">
+                <img width="300px" src="Minerva-Cloud_HorizLogo_RGB.svg"></img>
+            </h2>
             <div className="loginForm">
             <div className="input-group mb-3">
                 <div className="input-group-prepend">

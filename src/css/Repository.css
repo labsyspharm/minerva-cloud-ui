@@ -45,6 +45,10 @@
     margin-right: 0;
     padding: 10px;
     border-radius: 5px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 95vh;
+    scrollbar-color: dark;
 }
 
 .rendering-settings {

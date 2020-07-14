@@ -13,7 +13,7 @@ class Repositories extends React.Component {
         this.state = {
             repositories: [],
             nodes: [],
-            selected: null,
+            selectedImage: null,
             imageSrc: null,
             imageDetails: null,
             previewSpinner: false,
@@ -31,34 +31,36 @@ class Repositories extends React.Component {
         this.onChannelDeleted = this.onChannelDeleted.bind(this);
         this.onChannelAdded = this.onChannelAdded.bind(this);
         this.autoSettings = this.autoSettings.bind(this);
+
     }
 
-    select(node) {
-        let renderMode = this.props.guest ? 'prerenderedTile' : 'renderTile';
-        this.setState({ selected: node, channels: [], renderMode: renderMode });
+    componentDidMount() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const imageUuid = urlParams.get('imageid');
+        if (imageUuid) {
+            this.select(imageUuid);
+        }
+    }
 
-        let image = node.data;
-        
-        let getImageResponse = Client.getImage(node.uuid);
-        let getImageDimensionsResponse = Client.getImageDimensions(node.uuid);
-        console.log('getImageResponse: ', getImageResponse);
-        console.log('getImageDimensions: ', getImageDimensionsResponse);
+    select(imageUuid, node) {
+        window.history.replaceState(null, null, `?imageid=${imageUuid}`);
+
+        let renderMode = this.props.guest ? 'prerenderedTile' : 'renderTile';
+        this.setState({ selectedImage: null, channels: [], renderMode: renderMode });
+
+        let getImageResponse = Client.getImage(imageUuid);
+        let getImageDimensionsResponse = Client.getImageDimensions(imageUuid);
 
         Promise.all([getImageResponse, getImageDimensionsResponse]).then(values => {
             let imageResponse = values[0];
             let dimensions = values[1];
 
-            if (!imageResponse) {
-                // FIXME - should not need this check, investigate why reponse in undefined
-                // when token has expired
-                return;
-            }
             let renderingSettings = [];
             let channelGroups = [];
             if (!this.props.guest) {
                 // Guest mode does not support raw rendering, so add the default
                 // raw channel group only if logged in.
-                channelGroups.push(this._createRawChannelGroup(node.uuid, dimensions));
+                channelGroups.push(this._createRawChannelGroup(imageUuid, dimensions));
             }
 
             if (imageResponse.included && imageResponse.included.rendering_settings && imageResponse.included.rendering_settings.length > 0) {
@@ -76,58 +78,29 @@ class Repositories extends React.Component {
 
             let osdMetadata = {};
             Object.assign(osdMetadata, dimensions.data);
-            osdMetadata.image = image;
+            osdMetadata.image = imageResponse.data;
             this.setState({imageDetails: osdMetadata, 
                 osdMetadata: osdMetadata, 
                 channelGroups: channelGroups,
                 selectedChannelGroup: selectedChannelGroup,
                 renderMode: renderMode,
-                channels: selectedChannelGroup.channels
+                channels: selectedChannelGroup.channels,
+                selectedImage: imageResponse.data
             });
 
         });
     }
 
     _createRawChannelGroup(imageUuid, dimensions=null) {
-        let channels = [];
-        let colors = ['0000ff', 'ff0000', 'ffffff', '00ff00',
-                      '0000ff', 'ff0000', 'ff0000', '00ff00',
-                      '0000ff', 'ff0000', 'ffffff', '00ff00',
-                      '0000ff', 'ff0000', 'ffffff', '00ff00',
-                      '0000ff', 'ff0000', 'ffffff', '00ff00'
+        let channels = [
+            {
+                label: 'Channel 0',
+                id: 0,
+                min: 0.03,
+                max: 0.75,
+                color: 'ffffff'
+            }
         ];
-        if (dimensions) {
-            // Try to show channels 0, 6, 10, 11 by default.
-            let defaultChannels = [0, 6, 10, 11];
-            // If this fails it's okay, we can just show the DNA channel
-            try {
-                for (let i of defaultChannels) {
-                    let label = dimensions.data.pixels.channels[i].Name;
-                    let max = i == 0 ? 1 : 0.33;
-                    channels.push(
-                        {
-                            label: label,
-                            id: i,
-                            min: 0.01,
-                            max: max,
-                            color: colors[i]
-                        }
-                    );
-                }
-                
-            } catch (err) {}
-        }
-        if (channels.length === 0) {
-            channels = [
-                {
-                    label: 'DNA',
-                    id: 0,
-                    min: 0,
-                    max: 1,
-                    color: 'ffffff'
-                }
-            ];
-        }
         return {
             image_uuid: imageUuid,
             label: 'Raw',
@@ -281,22 +254,22 @@ class Repositories extends React.Component {
     }
 
     renderRightHandPanel() {
-        if (!this.state.selected) {
+        if (!this.state.selectedImage) {
             return null;
         }
         return (
         <div className="metadata">
             <h5 className="h5">METADATA</h5>
-            <ImageMetadata metadata={this.state.imageDetails} image={this.state.selected} />
+            <ImageMetadata metadata={this.state.imageDetails} image={this.state.selectedImage} />
             <hr/>
             
             <ChannelGroups groups={this.state.channelGroups} 
                 onChannelGroupSelected={this.selectChannelGroup} 
-                node={this.state.selected} 
+                node={this.state.selectedImage} 
                 selectedItem={this.state.selectedChannelGroup}
                 guest={this.props.guest}
                 channels={this.state.channels}
-                image={this.state.selected}
+                image={this.state.selectedImage}
                 onAutoSettings={this.autoSettings}
             />
             <div className="rendering-settings">

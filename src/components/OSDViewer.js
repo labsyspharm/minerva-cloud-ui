@@ -57,7 +57,7 @@ class OSDViewer extends React.Component {
                 // Would need some logic to decide which images need to be added to the world,
                 // and which are already in the world and can be just shown.
                 this.createTileSource(this.props.channelGroups, true);
-            } 
+            }
             else if (activeChannelGroupChanged) {
                 // Image is the same but active channel group has been changed
                 // Make the selected channel group visible and all others opaque
@@ -108,49 +108,44 @@ class OSDViewer extends React.Component {
         return hash.join(';');
     }
 
-    createTileSource(channelGroups, clear=false) {
+    createTileSource(channelGroups, clear = false) {
         if (clear) {
             this.state.viewer.world.removeAll();
             console.log('Clear world');
         }
 
-        Client.getToken().then(token => {
-            let headers = {
-                'Content-Type': 'application/json',
-                'Authorization': token,
-                'Accept': this.accept
+        for (let channelGroup of channelGroups) {
+            let options = {
+                loadTilesWithAjax: true,
+                crossOriginPolicy: 'Anonymous',
+                tileSource: {
+                    height: this.props.metadata.pixels.SizeY,
+                    width: this.props.metadata.pixels.SizeX,
+                    maxLevel: this.props.metadata.image.pyramid_levels,
+                    tileWidth: 1024,
+                    tileHeight: 1024,
+                    getTileUrl: this.createRenderUrl(channelGroup),
+                    getTileAjaxHeaders: (level, x, y) => {
+                        return {
+                            'Content-Type': 'application/json',
+                            'Authorization': Client.getToken(),
+                            'Accept': this.accept
+                        }
+                    }
+                },
+                opacity: 0,
+
+                success: (evt) => {
+                    this.tileSources[channelGroup.uuid] = evt.item;
+                }
             };
 
-            for (let channelGroup of channelGroups) {
-                console.log('Channel group :', channelGroup);
-
-                let options = {
-                    loadTilesWithAjax: true,
-                    crossOriginPolicy: 'Anonymous',
-                    ajaxHeaders: headers,
-                    tileSource: {
-                        height: this.props.metadata.pixels.SizeY,
-                        width: this.props.metadata.pixels.SizeX,
-                        maxLevel: this.props.metadata.image.pyramid_levels,
-                        tileWidth: 1024,
-                        tileHeight: 1024,
-                        getTileUrl: this.createRenderUrl(channelGroup)
-                    },
-                    opacity: 0,
-    
-                    success: (evt) => {
-                        this.tileSources[channelGroup.uuid] = evt.item;
-                    }
-                };
-
-                if (this.props.activeGroup.uuid === channelGroup.uuid) {
-                    options.opacity = 1;
-                }
-    
-                this.state.viewer.addTiledImage(options);
+            if (this.props.activeGroup.uuid === channelGroup.uuid) {
+                options.opacity = 1;
             }
 
-        });
+            this.state.viewer.addTiledImage(options);
+        }
 
     }
 
@@ -160,53 +155,50 @@ class OSDViewer extends React.Component {
             return;
         }
         this.rendering = true;
-        Client.getToken().then(token => {
-            let headers = {
-                'Content-Type': 'application/json',
-                'Authorization': token,
-                'Accept': this.accept
-            };
-
-            let options = {
-                loadTilesWithAjax: true,
-                crossOriginPolicy: 'Anonymous',
-                ajaxHeaders: headers,
-                tileSource: {
-                    height: this.props.metadata.pixels.SizeY,
-                    width: this.props.metadata.pixels.SizeX,
-                    maxLevel: this.props.metadata.image.pyramid_levels,
-                    tileWidth: 1024,
-                    tileHeight: 1024,
-                    getTileUrl: this.createRenderUrl(channelGroup)
-                },
-                opacity: 1,
-
-                success: (evt) => {
-                    let tiledImage = evt.item;
-                    let ready = () => {
-                        this._hideAllItems();
-                        tiledImage.setOpacity(1);
-
-                        let oldItem = this.tileSources[channelGroup.uuid];
-                        if (oldItem) {
-                            this.state.viewer.world.removeItem(oldItem);
-                        }
-                        this.tileSources[channelGroup.uuid] = evt.item;
-                        this.rendering = false;
-                      }
-                    
-                    if (tiledImage.getFullyLoaded()) {
-                       ready();
-                    } else {
-                       tiledImage.addOnceHandler('fully-loaded-change', ready);
+        let options = {
+            loadTilesWithAjax: true,
+            crossOriginPolicy: 'Anonymous',
+            tileSource: {
+                height: this.props.metadata.pixels.SizeY,
+                width: this.props.metadata.pixels.SizeX,
+                maxLevel: this.props.metadata.image.pyramid_levels,
+                tileWidth: 1024,
+                tileHeight: 1024,
+                getTileUrl: this.createRenderUrl(channelGroup),
+                getTileAjaxHeaders: (level, x, y) => {
+                    return {
+                        'Content-Type': 'application/json',
+                        'Authorization': Client.getToken(),
+                        'Accept': this.accept
                     }
-                    
                 }
-            };
+            },
+            opacity: 1,
 
-            this.state.viewer.addTiledImage(options);
+            success: (evt) => {
+                let tiledImage = evt.item;
+                let ready = () => {
+                    this._hideAllItems();
+                    tiledImage.setOpacity(1);
 
-        });
+                    let oldItem = this.tileSources[channelGroup.uuid];
+                    if (oldItem) {
+                        this.state.viewer.world.removeItem(oldItem);
+                    }
+                    this.tileSources[channelGroup.uuid] = evt.item;
+                    this.rendering = false;
+                }
+
+                if (tiledImage.getFullyLoaded()) {
+                    ready();
+                } else {
+                    tiledImage.addOnceHandler('fully-loaded-change', ready);
+                }
+
+            }
+        };
+
+        this.state.viewer.addTiledImage(options);
 
     }
 
@@ -237,7 +229,7 @@ class OSDViewer extends React.Component {
             }
 
             const api = Client.baseUrl + '/image/' + this.props.metadata.image.uuid + '/render-tile/';
-            const lod = (this.props.metadata.image.pyramid_levels - level  ) + '/';
+            const lod = (this.props.metadata.image.pyramid_levels - level) + '/';
             const pos = x + '/' + y + '/0/0/';
             const url = api + pos + lod + channelPath + '?gamma=1';
             return url;
@@ -247,7 +239,7 @@ class OSDViewer extends React.Component {
     createPrerenderedTileUrl(channelGroup) {
         return (level, x, y) => {
             const api = Client.baseUrl + '/image/' + this.props.metadata.image.uuid + '/prerendered-tile/';
-            const lod = (this.props.metadata.image.pyramid_levels - level );
+            const lod = (this.props.metadata.image.pyramid_levels - level);
             const pos = x + '/' + y + '/0/0/';
             const url = api + pos + lod + '/' + channelGroup.uuid;
             return url;

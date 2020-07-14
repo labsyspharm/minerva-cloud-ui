@@ -123,7 +123,7 @@ class RepositoryTree extends Component {
 
     select(node) {
         this.setState({selected: node});
-        this.props.onSelect(node);
+        this.props.onSelect(node.uuid, node);
     }
 
     onContextMenuClosed() {

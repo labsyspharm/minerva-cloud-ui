@@ -51,7 +51,7 @@ class App extends React.Component {
         }
     }
 
-    loginSuccess(user, guest = false) {
+    loginSuccess(user, guest = false, navigateRoot = false) {
         Client.setUser(user);
         Client.setGuest(guest);
         this.setState({ loggedIn: true, guest: guest });
@@ -62,7 +62,10 @@ class App extends React.Component {
         }
         this.forceUpdate();
 
-        navigate('/');
+        if (navigateRoot) {
+            navigate('/repositories');
+        }
+        
     }
 
     logoutSuccess() {
@@ -79,7 +82,7 @@ class App extends React.Component {
                 <Router className="container-fluid text-light container-fullheight">
                     <LoginPage path="/login" loggedIn={this.state.loggedIn} loginSuccess={this.loginSuccess} userPool={this.state.userPool} />
                     <ImportTool path="/import" loggedIn={this.state.loggedIn} />
-                    <Repositories path="/" loggedIn={this.state.loggedIn} guest={this.state.guest} />
+                    <Repositories path="/repositories" loggedIn={this.state.loggedIn} guest={this.state.guest} />
                     <Permissions path="/permissions/:repositoryUuid" loggedIn={this.state.loggedIn} />
                     <Permissions path="/permissions" loggedIn={this.state.loggedIn} />
                 </Router>
