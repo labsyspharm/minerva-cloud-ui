@@ -1,6 +1,8 @@
-# Minerva Admin
+# Minerva Cloud
 
-Administrator user interface for Minerva. Through the interface, the user is able to:
+<img width="500px" src="./public/Minerva-Cloud_HorizLogo_RGB.svg" />
+
+Administrator user interface for Minerva Cloud. Through the interface, the user is able to:
 * View images and repositories
 * Manage image and repository access
 * Import BioFormats-compatible microscopy images
