@@ -1,6 +1,6 @@
-# Minerva Cloud
-
 <img width="500px" src="./public/Minerva-Cloud_HorizLogo_RGB.svg" />
+
+# Minerva Cloud UI
 
 Administrator user interface for Minerva Cloud. Through the interface, the user is able to:
 * View images and repositories
