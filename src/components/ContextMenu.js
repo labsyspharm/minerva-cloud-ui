@@ -4,7 +4,7 @@ import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
 import { navigate } from "@reach/router";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash, faFolderOpen, faUserCog, faTrashRestore } from '@fortawesome/free-solid-svg-icons'
+import { faTrash, faFolderOpen, faUserCog, faTrashRestore, faBookOpen } from '@fortawesome/free-solid-svg-icons'
 
 class ContextMenu extends React.Component {
 
@@ -53,6 +53,7 @@ class ContextMenu extends React.Component {
             return (
                 <span>
                 {this.renderDeletedOrRestore()}
+                {this.renderOpenAuthor()}
                 </span>
             )
         }
@@ -72,6 +73,13 @@ class ContextMenu extends React.Component {
         }
     }
 
+    renderOpenAuthor() {
+        return (<a className="dropdown-item" onClick={(evt) => this.onClick(evt, 'author')}>
+        <FontAwesomeIcon className="mr-2" icon={faBookOpen}/>
+        Open in Author
+        </a>);
+    }
+
     onClick(evt, command) {
         evt.preventDefault();
         evt.stopPropagation();
@@ -85,6 +93,8 @@ class ContextMenu extends React.Component {
             alertify.warning('Not implemented yet');
         } else if (command === 'permissions') {
             navigate(`/permissions/${this.props.node.uuid}`);
+        } else if (command === 'author') {
+            window.open(`https://d2k10msu78qle7.cloudfront.net?image=${this.props.node.uuid}`);
         }
         this.props.onClosed();
     }
