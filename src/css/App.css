@@ -75,7 +75,7 @@
 
 .modal-backdrop {
   /* bug fix - no overlay */    
-  display: none;    
+  display: none;
 }
 
 .modal {

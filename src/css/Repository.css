@@ -21,16 +21,15 @@
 }
 
 .navigator {
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.6);
     max-width: 25vw;
     position: fixed;
     float: left;
-    margin-top: 10px;
-    margin-left: 10px;
+    margin-top: 0px;
+    margin-left: 0px;
     overflow-y: auto;
     max-height: 95vh;
     scrollbar-color: dark;
-    z-index: 1000;
     padding: 10px;
     border-radius: 5px;
 }
@@ -39,9 +38,9 @@
     background-color: rgba(0, 0, 0, 0.6);
     width: 300px;
     position: fixed;
-    right: 10px;
+    right: 0px;
     float: right;
-    margin-top: 10px;
+    margin-top: 0px;
     margin-right: 0;
     padding: 10px;
     border-radius: 5px;

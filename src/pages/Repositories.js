@@ -6,6 +6,7 @@ import '../css/Repository.css';
 import ImageMetadata from '../components/ImageMetadata';
 import OSDViewer from '../components/OSDViewer';
 import RenderingSettings from '../components/RenderingSettings';
+import Loader from '../components/Loader';
 
 class Repositories extends React.Component {
     constructor(props) {
@@ -16,13 +17,13 @@ class Repositories extends React.Component {
             selectedImage: null,
             imageSrc: null,
             imageDetails: null,
-            previewSpinner: false,
+            loading: false,
             osdMetadata: null,
             channels: [],
             channelGroups: [],
             selectedChannelGroup: null,
             renderMode: 'renderTile',
-            ignoreRenderUpdate: false
+            ignoreRenderUpdate: false,
         };
 
         this.select = this.select.bind(this);
@@ -36,17 +37,20 @@ class Repositories extends React.Component {
 
     componentDidMount() {
         const urlParams = new URLSearchParams(window.location.search);
-        const imageUuid = urlParams.get('imageid');
+        const imageUuid = urlParams.get('image');
         if (imageUuid) {
             this.select(imageUuid);
         }
     }
 
     select(imageUuid, node) {
-        window.history.replaceState(null, null, `?imageid=${imageUuid}`);
+        window.history.replaceState(null, null, `?image=${imageUuid}`);
 
         let renderMode = this.props.guest ? 'prerenderedTile' : 'renderTile';
-        this.setState({ selectedImage: null, channels: [], renderMode: renderMode });
+        this.setState({ selectedImage: null, 
+            channels: [], 
+            renderMode: renderMode,
+            loading: true });
 
         let getImageResponse = Client.getImage(imageUuid);
         let getImageDimensionsResponse = Client.getImageDimensions(imageUuid);
@@ -55,7 +59,6 @@ class Repositories extends React.Component {
             let imageResponse = values[0];
             let dimensions = values[1];
 
-            let renderingSettings = [];
             let channelGroups = [];
             if (!this.props.guest) {
                 // Guest mode does not support raw rendering, so add the default
@@ -64,7 +67,6 @@ class Repositories extends React.Component {
             }
 
             if (imageResponse.included && imageResponse.included.rendering_settings && imageResponse.included.rendering_settings.length > 0) {
-                renderingSettings = imageResponse.included.rendering_settings[0];
                 channelGroups.push(...imageResponse.included.rendering_settings);
             }
 
@@ -85,22 +87,47 @@ class Repositories extends React.Component {
                 selectedChannelGroup: selectedChannelGroup,
                 renderMode: renderMode,
                 channels: selectedChannelGroup.channels,
-                selectedImage: imageResponse.data
+                selectedImage: imageResponse.data,
+                loading: false
             });
 
         });
     }
 
-    _createRawChannelGroup(imageUuid, dimensions=null) {
-        let channels = [
+    _createRawChannelGroup(imageUuid, dimensions) {
+        let rgbChannels = [
+            {
+                label: 'Red',
+                id: 0,
+                min: 0,
+                max: 1,
+                color: 'ff0000'
+            },
+            {
+                label: 'Green',
+                id: 1,
+                min: 0,
+                max: 1,
+                color: '00ff00'
+            },
+            {
+                label: 'Blue',
+                id: 2,
+                min: 0,
+                max: 1,
+                color: '0000ff'
+            }
+        ];
+        let dnaChannels = [
             {
                 label: 'Channel 0',
                 id: 0,
                 min: 0.03,
-                max: 0.75,
+                max: 0.85,
                 color: 'ffffff'
             }
         ];
+        let channels = dimensions.data.pixels.SizeC === 3 ? rgbChannels : dnaChannels;
         return {
             image_uuid: imageUuid,
             label: 'Raw',
@@ -235,21 +262,29 @@ class Repositories extends React.Component {
         }
         return (
             <div className="row">
-                <div className="navigator">
-                    <RepositoryTree onSelect={this.select} refresh={this.props.refresh}/>
-                </div>
                 <div className="viewer overflow-hidden">
-                    
                     <OSDViewer metadata={this.state.osdMetadata} 
                         activeGroup={this.state.selectedChannelGroup}
                         channelGroups={this.state.channelGroups}
                         channels={this.state.channels} 
                         ignoreRenderUpdate={this.state.ignoreRenderUpdate} />
+                    <div className="minerva-loader-center">
+                        <Loader active={this.state.loading} size="large" />
+                     </div>
                     
                 </div>
+                { this.renderLeftHandPanel() }
                 { this.renderRightHandPanel() }
             </div>
 
+        );
+    }
+
+    renderLeftHandPanel() {
+        return (
+            <div className="navigator">
+                <RepositoryTree onSelect={this.select} refresh={this.props.refresh}/>
+            </div>
         );
     }
 
@@ -259,7 +294,7 @@ class Repositories extends React.Component {
         }
         return (
         <div className="metadata">
-            <h5 className="h5">METADATA</h5>
+            <h5 className="h5 text-left">METADATA</h5>
             <ImageMetadata metadata={this.state.imageDetails} image={this.state.selectedImage} />
             <hr/>
             

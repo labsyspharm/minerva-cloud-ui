@@ -1,5 +1,5 @@
 .channel-color-picker {
-    position: absolute;
+    position: fixed;
     right: 300px;
 }
 

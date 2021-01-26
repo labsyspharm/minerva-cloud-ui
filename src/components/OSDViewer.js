@@ -21,6 +21,10 @@ class OSDViewer extends React.Component {
                 this.accept = "image/webp";
             }
         });
+
+        this.state = {
+            loading: false
+        }
     }
 
     componentDidMount() {
@@ -52,6 +56,7 @@ class OSDViewer extends React.Component {
                 // Image has changed -> Clear world and add all channel groups as TiledImages
                 this._hideAllItems();
                 this.rendering = false;
+                this.setState({loading: true});
 
                 // TODO Changing image could be optimized, the world does not have to be cleared.
                 // Would need some logic to decide which images need to be added to the world,
@@ -124,7 +129,7 @@ class OSDViewer extends React.Component {
                     maxLevel: this.props.metadata.image.pyramid_levels,
                     tileWidth: 1024,
                     tileHeight: 1024,
-                    getTileUrl: this.createRenderUrl(channelGroup),
+                    getTileUrl: this.createRenderUrl(channelGroup, this.props.metadata.image),
                     getTileAjaxHeaders: (level, x, y) => {
                         return {
                             'Content-Type': 'application/json',
@@ -137,6 +142,7 @@ class OSDViewer extends React.Component {
 
                 success: (evt) => {
                     this.tileSources[channelGroup.uuid] = evt.item;
+                    this.setState({loading: false});
                 }
             };
 
@@ -164,7 +170,7 @@ class OSDViewer extends React.Component {
                 maxLevel: this.props.metadata.image.pyramid_levels,
                 tileWidth: 1024,
                 tileHeight: 1024,
-                getTileUrl: this.createRenderUrl(channelGroup),
+                getTileUrl: this.createRenderUrl(channelGroup, this.props.metadata.image),
                 getTileAjaxHeaders: (level, x, y) => {
                     return {
                         'Content-Type': 'application/json',
@@ -202,15 +208,15 @@ class OSDViewer extends React.Component {
 
     }
 
-    createRenderUrl(channelGroup) {
+    createRenderUrl(channelGroup, image) {
         if (channelGroup.isRawRender) {
-            return this.createRenderTileUrl();
+            return this.createRenderTileUrl(image.format);
         } else {
-            return this.createPrerenderedTileUrl(channelGroup);
+            return this.createPrerenderedTileUrl(channelGroup, image.format);
         }
     }
 
-    createRenderTileUrl() {
+    createRenderTileUrl(rawFormat) {
         return (level, x, y) => {
             let channelPath = '';
 
@@ -231,17 +237,17 @@ class OSDViewer extends React.Component {
             const api = Client.baseUrl + '/image/' + this.props.metadata.image.uuid + '/render-tile/';
             const lod = (this.props.metadata.image.pyramid_levels - level) + '/';
             const pos = x + '/' + y + '/0/0/';
-            const url = api + pos + lod + channelPath + '?gamma=1';
+            const url = api + pos + lod + channelPath + '?gamma=1&rawformat=' + rawFormat;
             return url;
         };
     }
 
-    createPrerenderedTileUrl(channelGroup) {
+    createPrerenderedTileUrl(channelGroup, rawFormat) {
         return (level, x, y) => {
             const api = Client.baseUrl + '/image/' + this.props.metadata.image.uuid + '/prerendered-tile/';
             const lod = (this.props.metadata.image.pyramid_levels - level);
             const pos = x + '/' + y + '/0/0/';
-            const url = api + pos + lod + '/' + channelGroup.uuid;
+            const url = api + pos + lod + '/' + channelGroup.uuid + '?rawformat=' + rawFormat;
             return url;
         };
     }

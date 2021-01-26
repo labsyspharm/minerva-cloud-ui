@@ -4,7 +4,8 @@ import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
 import {
     CognitoUser,
-    AuthenticationDetails
+    AuthenticationDetails,
+    CookieStorage
 } from 'amazon-cognito-identity-js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner, faBackward, faEnvelope, faKey } from '@fortawesome/free-solid-svg-icons'
@@ -33,6 +34,19 @@ class LoginPage extends React.Component {
         this.anonymousLogin = this.anonymousLogin.bind(this);
         this.resetPassword = this.resetPassword.bind(this);
         this.showForm = this.showForm.bind(this);
+
+        let secure = true;
+        let domain = "minerva.im";
+        if (window.location.hostname === 'localhost') {
+          domain = 'localhost';
+          secure = false;
+        }
+        this.cookieStorage = new CookieStorage({
+          domain: domain,
+          path: '/', 
+          secure: secure,
+          expires: 365
+        });
     }
 
     changePassword() {
@@ -73,7 +87,8 @@ class LoginPage extends React.Component {
     login = () => {
         const cognitoUser = new CognitoUser({
             Username: this.state.username,
-            Pool: this.props.userPool
+            Pool: this.props.userPool,
+            Storage: this.cookieStorage
         });
 
         const authenticationDetails = new AuthenticationDetails({
@@ -116,7 +131,8 @@ class LoginPage extends React.Component {
     anonymousLogin() {
         const cognitoUser = new CognitoUser({
             Username: '00000000-0000-0000-0000-000000000000',
-            Pool: this.props.userPool
+            Pool: this.props.userPool,
+            Storage: this.cookieStorage
         });
         this.props.loginSuccess(cognitoUser, true, true);
     }
@@ -149,7 +165,8 @@ class LoginPage extends React.Component {
         }
         let cognitoUser = new CognitoUser({
             Username: this.state.username,
-            Pool: this.props.userPool
+            Pool: this.props.userPool,
+            Storage: this.cookieStorage
         });
 
         cognitoUser.forgotPassword({
@@ -175,7 +192,8 @@ class LoginPage extends React.Component {
         }
         let cognitoUser = new CognitoUser({
             Username: this.state.username,
-            Pool: this.props.userPool
+            Pool: this.props.userPool,
+            Storage: this.cookieStorage
         });
         let self = this;
         cognitoUser.confirmPassword(this.state.verificationCode, this.state.password, {
@@ -210,8 +228,8 @@ class LoginPage extends React.Component {
     renderLoginForm() {
         return (
         <form>
-            <h2 className="h2 mb-3">
-                <img width="300px" src="Minerva-Cloud_HorizLogo_RGB.svg"></img>
+            <h2 className="h2 mb-3 loginHeader">
+                <img alt="Minerva logo" width="300px" src="Minerva_FinalLogo_RGB.svg"></img>
             </h2>
             <div className="loginForm">
             <div className="input-group mb-3">
@@ -229,7 +247,7 @@ class LoginPage extends React.Component {
             <button type="button" className="btn form-control btn-primary mb-3" disabled={this.state.loginSpinner} onClick={this.login}>Sign in
                 { this.state.loginSpinner ? <FontAwesomeIcon className="float-right" icon={faSpinner} size="lg" spin /> : null }
             </button>
-            <a href="#" onClick={this.forgotPassword}>Forgot password</a><br></br>
+            <a href="#" onClick={this.forgotPassword}>Forgot your password?</a><br></br>
             <button type="button" className="btn form-control btn-outline-light mt-3" onClick={this.anonymousLogin}>Continue as Guest
             </button>
             

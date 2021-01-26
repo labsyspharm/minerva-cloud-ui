@@ -9,7 +9,7 @@ import { Router, navigate } from "@reach/router";
 import Client from './MinervaClient';
 import LoginPage from './pages/LoginPage';
 import {
-    CognitoUserPool,
+    CognitoUserPool, CookieStorage
 } from 'amazon-cognito-identity-js';
 import AppConfig from './AppConfig';
 
@@ -28,7 +28,8 @@ class App extends React.Component {
 
         let userPool = new CognitoUserPool({
             UserPoolId: AppConfig.CognitoUserPoolId,
-            ClientId: AppConfig.CognitoClientId
+            ClientId: AppConfig.CognitoClientId,
+            Storage: new CookieStorage({domain: ".minerva.im"})
         });
         this.state.userPool = userPool;
 
@@ -82,7 +83,7 @@ class App extends React.Component {
                 <Router className="container-fluid text-light container-fullheight">
                     <LoginPage path="/login" loggedIn={this.state.loggedIn} loginSuccess={this.loginSuccess} userPool={this.state.userPool} />
                     <ImportTool path="/import" loggedIn={this.state.loggedIn} />
-                    <Repositories path="/repositories" loggedIn={this.state.loggedIn} guest={this.state.guest} />
+                    <Repositories default path="/repositories" loggedIn={this.state.loggedIn} guest={this.state.guest} />
                     <Permissions path="/permissions/:repositoryUuid" loggedIn={this.state.loggedIn} />
                     <Permissions path="/permissions" loggedIn={this.state.loggedIn} />
                 </Router>

@@ -94,7 +94,7 @@ class ContextMenu extends React.Component {
         } else if (command === 'permissions') {
             navigate(`/permissions/${this.props.node.uuid}`);
         } else if (command === 'author') {
-            window.open(`https://d2k10msu78qle7.cloudfront.net?image=${this.props.node.uuid}`);
+            window.open(`https://author.minerva.im?image=${this.props.node.uuid}`);
         }
         this.props.onClosed();
     }

@@ -13,7 +13,7 @@ class Header extends React.Component {
       <nav className="navbar navbar-expand-lg navbar-dark primary-color bg-dark header">
 
         <a className="navbar-brand bg-dark" href="#">
-          <img width="200px" src="Minerva-Cloud_HorizLogo_RGB.svg"></img>
+          <img width="180px" src="Minerva-Cloud_HorizLogo_RGB.svg"></img>
         </a>
 
         <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#basicExampleNav"
@@ -31,7 +31,11 @@ class Header extends React.Component {
             { !this.props.guest ? this.renderImportMenu() : null }
             { !this.props.guest ? this.renderPermissionsMenu() : null }
           </ul>
-          { this.props.loggedIn ? <UserInfo logoutSuccess={this.props.logoutSuccess} loggedInUser={this.props.loggedInUser} guest={this.props.guest} /> : null }
+          { this.props.loggedIn ? 
+            <UserInfo logoutSuccess={this.props.logoutSuccess} 
+              loggedInUser={this.props.loggedInUser} 
+              guest={this.props.guest} /> 
+          : null }
 
         </div>
 
