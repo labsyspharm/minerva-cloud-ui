@@ -10,8 +10,16 @@ Administrator user interface for Minerva Cloud. Through the interface, the user 
 
 ## Setting up the development environment
 
-* Install NodeJS (recent version)
-* Run in project directory: `npm install`
+* Install NodeJS (recent LTS version should work)
+* Run in the project directory: `npm install`
+
+## Configure Minerva Cloud url and Cognito
+
+Update package.json property "proxy" to point to your Minerva Cloud API Gateway address.
+
+```"proxy": "https://<api_gateway_id>.execute-api.<region>.amazonaws.com"```
+
+Update AppConfig.js to contain correct values of region, CognitoUserPoolId and CognitoClientId.
 
 ## Available Scripts
 
@@ -41,8 +49,11 @@ Your app is ready to be deployed!
 ### `npm run deploy-demo`
 
 Deploys the built app to S3 demo bucket "minerva-admin-demo".
-
+The bucket name can be changed by editing package.json.
 Requires that aws command line tools are installed and configured.
 
-Demo environment is accessible from url:
-* http://minerva-admin-demo.s3-website-us-east-1.amazonaws.com/
+To create a hosted website, see AWS CloudFront documentation about how to
+host a static website from Amazon S3. You should create a CloudFront distribution, 
+that has one origin for the bucket serving static content, and another origin for Minerva Cloud API Gateway. 
+A CloudFront behavior should proxy all requests starting with the API Gateway stage (e.g. /dev) 
+to the API Gateway. All other requests should be proxied to the bucket.
