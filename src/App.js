@@ -4,7 +4,6 @@ import Header from './components/Header';
 import ImportTool from './pages/ImportTool';
 import Repositories from './pages/Repositories';
 import Permissions from './pages/Permissions';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { Router, navigate } from "@reach/router";
 import Client from './MinervaClient';
 import LoginPage from './pages/LoginPage';

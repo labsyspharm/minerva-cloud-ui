@@ -17,16 +17,17 @@
     "alertifyjs": "^1.13.1",
     "amazon-cognito-identity-js": "4.2.4",
     "aws-sdk": "^2.610.0",
-    "bootstrap": "^4.4.1",
+    "bootstrap": "^4.6.0",
     "jquery": "^3.4.1",
     "openseadragon": "^2.4.1",
     "popper.js": "^1.16.1",
     "react": "^16.12.0",
-    "react-contexify": "^4.1.1",
     "react-color": "^2.18.1",
+    "react-contexify": "^4.1.1",
     "react-dom": "^16.12.0",
-    "react-lazy-paginated-tree": "^0.8.4",
-    "react-scripts": "3.3.1"
+    "react-lazy-paginated-tree": "^0.0.3",
+    "react-scripts": "^4.0.3",
+    "reactstrap": "^8.10.0"
   },
   "scripts": {
     "start": "react-scripts start",
