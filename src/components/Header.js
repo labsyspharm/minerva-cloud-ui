@@ -1,15 +1,7 @@
 import React from 'react';
 import UserInfo from './UserInfo';
 import { Link } from "@reach/router";
-import {
-  Navbar,
-  Nav,
-  NavLink,
-  NavbarToggler,
-  NavbarBrand,
-  NavItem,
-  Collapse
-} from "reactstrap";
+import { Navbar, Nav, Container } from 'react-bootstrap';
 import '../css/Header.css';
 
 class Header extends React.Component {
@@ -35,44 +27,47 @@ class Header extends React.Component {
     }
     return (
       <Navbar
-        className="bg-dark"
-        color="darK"
-        dark
+        collapseOnSelect
+        bg="dark"
+        variant="dark"
         expand="md"
       >
-        <NavbarBrand href="#">
-          <img width="180px" src="Minerva-Cloud_HorizLogo_RGB.svg"></img>
-        </NavbarBrand>
+        <Container fluid>
+          <Navbar.Brand href="#">
+            <img width="180px" src="Minerva-Cloud_HorizLogo_RGB.svg"></img>
+          </Navbar.Brand>
 
-        <NavbarToggler
-          onClick={this.toggle}
-        />
+          <Navbar.Toggle
+            aria-controls="navbar-collapse"
+          />
 
-        <Collapse isOpen={this.state.is_open} navbar>
+          <Navbar.Collapse id="navbar-collapse">
 
-          <Nav className="mr-auto" navbar>
+            <Nav className="mr-auto" navbar>
 
-            <NavItem>
-              <NavLink tag={Link} to="/repositories">Repositories</NavLink>
-            </NavItem>
-            { !this.props.guest &&
-              <NavItem>
-                <NavLink tag={Link} to="/import">Import</NavLink>
-              </NavItem>
+              <Nav.Link as={Link} to="/repositories">
+                Repositories
+              </Nav.Link>
+              { !this.props.guest &&
+              <Nav.Link as={Link} to="/import">
+                Import
+              </Nav.Link>
+              }
+              { !this.props.guest &&
+              <Nav.Link as={Link} to="/permissions">
+                Permissions
+              </Nav.Link>
+              }
+            </Nav>
+            { this.props.loggedIn &&
+            <UserInfo logoutSuccess={this.props.logoutSuccess}
+                      loggedInUser={this.props.loggedInUser}
+                      guest={this.props.guest} />
             }
-            { !this.props.guest &&
-              <NavItem>
-                <NavLink tag={Link} to="/permissions">Permissions</NavLink>
-              </NavItem>
-            }
-          </Nav>
-          { this.props.loggedIn &&
-            <UserInfo logoutSuccess={this.props.logoutSuccess} 
-              loggedInUser={this.props.loggedInUser} 
-              guest={this.props.guest} /> 
-          }
 
-        </Collapse>
+          </Navbar.Collapse>
+
+        </Container>
 
       </Navbar>
     );
