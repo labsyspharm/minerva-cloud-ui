@@ -1,0 +1,25 @@
+hr {
+    background-color: #6c757d;
+}
+
+.repository-list {
+    padding: 1em;
+}
+
+.repo-row {
+    padding: 0.5em 1em 0.5em 1em;
+    border-radius: 0.5em;
+}
+
+.repo-row:hover {
+    background-color: #282c34;
+    cursor: pointer;
+}
+
+.repo-link {
+    padding: 0 1em 0 0;
+}
+
+.repo-link:hover {
+    color: #1090ff;
+}
