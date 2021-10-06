@@ -12,6 +12,7 @@ import {
 } from 'amazon-cognito-identity-js';
 import AppConfig from './AppConfig';
 import './css/App.css';
+import ImageView from "./pages/ImageView";
 
 
 class App extends React.Component {
@@ -105,6 +106,11 @@ class App extends React.Component {
                       path="/repositories/:repositoryUuid"
                       loggedIn={this.state.loggedIn}
                       guest={this.state.guest}
+                    />
+                    <ImageView
+                        path="/images/:imageUuid"
+                        loggedIn={this.state.loggedIn}
+                        guest={this.state.guest}
                     />
                     <Permissions
                       path="/permissions/:repositoryUuid"
