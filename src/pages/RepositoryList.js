@@ -1,6 +1,6 @@
 import React from 'react';
 import Client from "../MinervaClient";
-import {Container, Col, Row } from "react-bootstrap";
+import {Container, Col, Row, Breadcrumb} from "react-bootstrap";
 import Badge from "react-bootstrap/Badge";
 
 import "../css/RepositoryList.css";
@@ -55,7 +55,12 @@ class RepositoryList extends React.Component {
     return (
       <div className="repository-list">
         <Container>
-          <FontAwesomeIcon icon={faDatabase}></FontAwesomeIcon>&nbsp;Repositories
+          <FontAwesomeIcon icon={faDatabase}></FontAwesomeIcon>&nbsp;
+          <Breadcrumb>
+            <Breadcrumb.Item active>
+              Repositories
+            </Breadcrumb.Item>
+          </Breadcrumb>
           <hr/>
           { this.state.loading && "Loading..." }
           { this.state.repositories.map((item, index) => (

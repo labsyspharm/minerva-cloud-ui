@@ -1,9 +1,10 @@
 import React from 'react';
-import {Badge, Col, Container, Row} from "react-bootstrap";
+import {Badge, Breadcrumb, Col, Container, Row} from "react-bootstrap";
 
 import Client from "../MinervaClient";
 
 import "../css/RepositoryView.css";
+import {Link} from "@reach/router";
 
 class RepositoryView extends React.Component {
   constructor(props) {
@@ -63,13 +64,20 @@ class RepositoryView extends React.Component {
     return (
       <div className="repository-view">
         <Container>
-          <span className="repo-name">
-            { this.state.repo_name }
-          </span>
-          <Badge variant="light">
-            { this.state.repo_access }
-          </Badge>
-          <div className="uuid-display">
+          <Breadcrumb>
+            <Breadcrumb.Item linkAs={Link} linkProps={{to: "/repositories"}}>
+              Repositories
+            </Breadcrumb.Item>
+            <Breadcrumb.Item active>
+              <span className="repo-name">
+                { this.state.repo_name }
+              </span>
+              <Badge variant="dark">
+                { this.state.repo_access }
+              </Badge>
+            </Breadcrumb.Item>
+          </Breadcrumb>
+          <div>
             <b>UUID:</b> { this.props.repositoryUuid }
           </div>
           <hr/>
