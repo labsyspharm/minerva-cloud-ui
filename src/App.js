@@ -78,14 +78,15 @@ class App extends React.Component {
     }
 
     render() {
+        let login_state = {
+            loggedIn: this.state.loggedIn,
+            loggedInUser: this.state.loggedInUser,
+            guest: this.state.guest,
+            logoutSuccess: this.logoutSuccess
+        }
         return (
             <div className="App text-light">
-                <Header
-                  logoutSuccess={this.logoutSuccess}
-                  loggedIn={this.state.loggedIn}
-                  loggedInUser={this.state.loggedInUser}
-                  guest={this.state.guest}
-                />
+                <Header login_state={login_state}/>
                 <Router>
                     <LoginPage
                       path="/login"
@@ -99,18 +100,15 @@ class App extends React.Component {
                     />
                     <RepositoryList
                       default path="/repositories"
-                      loggedIn={this.state.loggedIn}
-                      guest={this.state.guest}
+                      login_state={login_state}
                     />
                     <RepositoryView
                       path="/repositories/:repositoryUuid"
-                      loggedIn={this.state.loggedIn}
-                      guest={this.state.guest}
+                      login_state={login_state}
                     />
                     <ImageView
-                        path="/images/:imageUuid"
-                        loggedIn={this.state.loggedIn}
-                        guest={this.state.guest}
+                      path="/images/:imageUuid"
+                      login_state={login_state}
                     />
                     <Permissions
                       path="/permissions/:repositoryUuid"

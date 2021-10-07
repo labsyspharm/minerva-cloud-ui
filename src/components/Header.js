@@ -22,7 +22,7 @@ class Header extends React.Component {
   }
 
   render() {
-    if (!this.props.loggedIn) {
+    if (!this.props.login_state.loggedIn) {
       return null;
     }
     return (
@@ -48,21 +48,19 @@ class Header extends React.Component {
               <Nav.Link as={Link} to="/repositories">
                 Repositories
               </Nav.Link>
-              { !this.props.guest &&
+              { !this.props.login_state.guest &&
               <Nav.Link as={Link} to="/import">
                 Import
               </Nav.Link>
               }
-              { !this.props.guest &&
+              { !this.props.login_state.guest &&
               <Nav.Link as={Link} to="/permissions">
                 Permissions
               </Nav.Link>
               }
             </Nav>
-            { this.props.loggedIn &&
-            <UserInfo logoutSuccess={this.props.logoutSuccess}
-                      loggedInUser={this.props.loggedInUser}
-                      guest={this.props.guest} />
+            { this.props.login_state.loggedIn &&
+            <UserInfo login_state={this.props.login_state} />
             }
 
           </Navbar.Collapse>

@@ -5,6 +5,7 @@ import Client from "../MinervaClient";
 
 import "../css/RepositoryView.css";
 import {Link} from "@reach/router";
+import RepoHeader from "../components/RepoHeader";
 
 class RepositoryView extends React.Component {
   constructor(props) {
@@ -62,53 +63,49 @@ class RepositoryView extends React.Component {
       return null;
     }
     return (
-      <div className="repository-view">
-        <Container>
-          <Breadcrumb>
-            <Breadcrumb.Item linkAs={Link} linkProps={{to: "/repositories"}}>
-              Repositories
-            </Breadcrumb.Item>
-            <Breadcrumb.Item active>
-              <span className="repo-name">
-                { this.state.repo_name }
-              </span>
-              <Badge variant="dark">
-                { this.state.repo_access }
-              </Badge>
-            </Breadcrumb.Item>
-          </Breadcrumb>
-          <div>
-            <b>UUID:</b> { this.props.repositoryUuid }
-          </div>
-          <hr/>
-          { this.state.loading && "Loading..." }
-          { this.state.images.map((img, idx) => (
-            <div className="img-line" key={img.uuid}>
-              <Row>
-                <Col lg="3">
-                  { img.name } <Badge variant="primary">{ img.format }</Badge>
-                  { img.deleted && <Badge variant="danger">Deleted</Badge> }
-                </Col>
-                <Col lg="4">
-                  { img.uuid }
-                </Col>
-                <Col lg="1">
-                  { img.tile_size }
-                </Col>
-                <Col>
-                  { img.pyramid_levels }
-                </Col>
-                <Col lg="1">
-                  { img.compression }
-                </Col>
-                <Col lg="2" className="text-right">
-                  sample
-                </Col>
-              </Row>
+      <>
+        <RepoHeader
+          path_list={[
+            {elem: "Repositories", link: "/repositories"},
+            {elem: this.state.repo_name, link: null}
+          ]}
+        />
+        <div className="repository-view">
+          <Container>
+            <div>
+              <b>UUID:</b> { this.props.repositoryUuid }
             </div>
-          )) }
-        </Container>
-      </div>
+            <hr/>
+            { this.state.loading && "Loading..." }
+            { this.state.images.map((img, idx) => (
+              <div className="img-line" key={img.uuid}>
+                <Row>
+                  <Col lg="3">
+                    <Link to={`/images/${img.uuid}`} className="img-link">{ img.name }</Link>
+                    <Badge variant="primary">{ img.format }</Badge>
+                    { img.deleted && <Badge variant="danger">Deleted</Badge> }
+                  </Col>
+                  <Col lg="4">
+                    { img.uuid }
+                  </Col>
+                  <Col lg="1">
+                    { img.tile_size }
+                  </Col>
+                  <Col>
+                    { img.pyramid_levels }
+                  </Col>
+                  <Col lg="1">
+                    { img.compression }
+                  </Col>
+                  <Col lg="2" className="text-right">
+                    sample
+                  </Col>
+                </Row>
+              </div>
+            )) }
+          </Container>
+        </div>
+      </>
     )
   }
 }

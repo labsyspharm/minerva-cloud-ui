@@ -5,8 +5,9 @@ import Badge from "react-bootstrap/Badge";
 
 import "../css/RepositoryList.css";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faDatabase, faImage} from "@fortawesome/free-solid-svg-icons";
+import {faImage} from "@fortawesome/free-solid-svg-icons";
 import {Link} from "@reach/router";
+import RepoHeader from "../components/RepoHeader";
 
 class RepositoryList extends React.Component {
   constructor(props) {
@@ -53,41 +54,41 @@ class RepositoryList extends React.Component {
 
   render() {
     return (
-      <div className="repository-list">
-        <Container>
-          <FontAwesomeIcon icon={faDatabase}></FontAwesomeIcon>&nbsp;
-          <Breadcrumb>
-            <Breadcrumb.Item active>
-              Repositories
-            </Breadcrumb.Item>
-          </Breadcrumb>
-          <hr/>
-          { this.state.loading && "Loading..." }
-          { this.state.repositories.map((item, index) => (
-            <div
-              className="repo-row"
-              key={ item.uuid }
-            >
-              <Row>
-                <Col lg="6">
-                  <Link className="repo-link" to={`/repositories/${item.uuid}`}>
-                    <b>{ item.name }</b>
-                  </Link>
-                  <Badge variant="light" text="dark">
-                    { item.access }
-                  </Badge>
-                </Col>
-                <Col lg="4">
-                  { item.uuid }
-                </Col>
-                <Col className="text-right" lg="2">
-                  <FontAwesomeIcon icon={faImage}></FontAwesomeIcon>
-                </Col>
-              </Row>
-            </div>
-          ))}
-        </Container>
-      </div>
+      <>
+        <RepoHeader
+          path_list={[
+            {elem: "Repositories", link: null}
+          ]}
+        />
+        <div className="repository-list">
+          <Container>
+            { this.state.loading && "Loading..." }
+            { this.state.repositories.map((item, index) => (
+              <div
+                className="repo-row"
+                key={ item.uuid }
+              >
+                <Row>
+                  <Col lg="6">
+                    <Link className="repo-link" to={`/repositories/${item.uuid}`}>
+                      <b>{ item.name }</b>
+                    </Link>
+                    <Badge variant="light" text="dark">
+                      { item.access }
+                    </Badge>
+                  </Col>
+                  <Col lg="4">
+                    { item.uuid }
+                  </Col>
+                  <Col className="text-right" lg="2">
+                    <FontAwesomeIcon icon={faImage}></FontAwesomeIcon>
+                  </Col>
+                </Row>
+              </div>
+            ))}
+          </Container>
+        </div>
+      </>
     );
   }
 }
