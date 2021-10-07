@@ -1,0 +1,28 @@
+.image-view {
+    padding: 1em;
+}
+
+.viewer {
+    width: 100%;
+    height: calc(100vh - 40px);
+}
+
+.metadata {
+    background-color: rgba(0, 0, 0, 0.6);
+    width: 300px;
+    position: fixed;
+    right: 0px;
+    float: right;
+    margin-top: 0px;
+    margin-right: 0;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 95vh;
+    scrollbar-color: dark;
+}
+
+.rendering-settings {
+    margin-top: 20px;
+}
