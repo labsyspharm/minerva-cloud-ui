@@ -7,18 +7,7 @@ import '../css/Header.css';
 class Header extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      is_open: false
-    };
-
-    this.toggle = this.toggle.bind(this)
-  }
-
-  toggle() {
-    let was_open = this.state.is_open;
-    this.setState({
-      is_open: !was_open
-    })
+    this.state = {};
   }
 
   render() {
