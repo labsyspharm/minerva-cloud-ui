@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from "@reach/router";
-import { Navbar, Nav, Container } from 'react-bootstrap';
+import {Navbar, Nav, Container} from 'react-bootstrap';
 import '../css/RepoHeader.css';
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faDatabase} from "@fortawesome/free-solid-svg-icons";
 
 class RepoHeader extends React.Component {
   constructor(props) {
@@ -16,6 +18,7 @@ class RepoHeader extends React.Component {
           as={Link}
           className={idx > 0 ? "path-item" : "path-start"}
           to={link.link}
+          key={idx}
         >
           {link.elem}
         </Nav.Link>
@@ -25,6 +28,7 @@ class RepoHeader extends React.Component {
         <Nav.Link
           href="#"
           className={idx > 0 ? "path-item": "path-start"}
+          key={idx}
         >
           {link.elem}
         </Nav.Link>
@@ -41,7 +45,10 @@ class RepoHeader extends React.Component {
         expand="md"
       >
         <Container fluid>
-          <Nav>
+          <Navbar.Brand>
+            <FontAwesomeIcon icon={faDatabase}/>&nbsp;
+          </Navbar.Brand>
+          <Nav className="mr-auto" navbar>
             {this.props.path_list.map(this.renderBreadcrumb)}
           </Nav>
         </Container>
