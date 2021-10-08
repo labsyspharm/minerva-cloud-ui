@@ -41,6 +41,7 @@ class UserInfo extends React.Component {
             <NavDropdown
               id='nav-account-dropdown'
               title='Account'
+              align="end"
             >
                 <NavDropdown.Item>
                     <FontAwesomeIcon icon={faUser}/>&nbsp;

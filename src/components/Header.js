@@ -3,6 +3,7 @@ import UserInfo from './UserInfo';
 import { Link } from "@reach/router";
 import { Navbar, Nav, Container } from 'react-bootstrap';
 import '../css/Header.css';
+import '../css/core.css';
 
 class Header extends React.Component {
   constructor(props) {
@@ -32,7 +33,7 @@ class Header extends React.Component {
 
           <Navbar.Collapse id="navbar-collapse">
 
-            <Nav className="mr-auto" navbar>
+            <Nav className="me-auto" navbar>
 
               <Nav.Link as={Link} to="/repositories">
                 Repositories
