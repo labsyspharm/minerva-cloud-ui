@@ -280,7 +280,7 @@ class ImageView extends React.Component {
           ]}
         />
         <div className="image-view">
-          <Container>
+          <Container fluid>
             <Row>
               <div className="viewer overflow-hidden">
                 <OSDViewer
