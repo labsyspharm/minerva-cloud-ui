@@ -264,7 +264,11 @@ class ImageView extends React.Component {
 
   render() {
     if (!this.state.repo_name)
-      return null;
+      return (
+        <div className="minerva-loader-center">
+          <Loader active={this.state.loading} size="large" />
+        </div>
+      );
 
     return (
       <>
@@ -290,6 +294,7 @@ class ImageView extends React.Component {
                   <Loader active={this.state.loading} size="large" />
                 </div>
               </div>
+              {this.renderRightHandPanel()}
             </Row>
           </Container>
         </div>

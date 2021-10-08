@@ -42,7 +42,11 @@ class OSDViewer extends React.Component {
             viewer.addHandler('tile-load-failed', (e) => {
                 // TODO investigate why there's "Image load aborted" errors when changing image
             });
-            this.setState({ viewer: viewer });
+            this.setState({ viewer: viewer }, () => {
+                if ( this.props.channelGroups ) {
+                    this.createTileSource(this.props.channelGroups, true);
+                }
+            });
         }
 
     }
