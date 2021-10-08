@@ -1,9 +1,12 @@
 import React from 'react';
 import Client from "../MinervaClient";
-import {Container, Col, Row, Breadcrumb} from "react-bootstrap";
+import Container from "react-bootstrap/Container";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
 import Badge from "react-bootstrap/Badge";
 
 import "../css/RepositoryList.css";
+import '../css/core.css';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faImage} from "@fortawesome/free-solid-svg-icons";
 import {Link} from "@reach/router";
@@ -73,7 +76,7 @@ class RepositoryList extends React.Component {
                     <Link className="repo-link" to={`/repositories/${item.uuid}`}>
                       <b>{ item.name }</b>
                     </Link>
-                    <Badge variant="light" text="dark">
+                    <Badge bg="light" text="dark">
                       { item.access }
                     </Badge>
                   </Col>

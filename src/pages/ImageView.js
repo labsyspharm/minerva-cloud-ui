@@ -1,7 +1,8 @@
 import React from "react";
-import {Badge, Breadcrumb, Col, Container, Row} from "react-bootstrap";
+import {Col, Container, Row} from "react-bootstrap";
 
 import "../css/ImageView.css";
+import '../css/core.css';
 import Client from "../MinervaClient";
 import RepoHeader from "../components/RepoHeader";
 import ImageMetadata from "../components/ImageMetadata";

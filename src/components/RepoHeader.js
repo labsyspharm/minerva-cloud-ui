@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from "@reach/router";
 import {Navbar, Nav, Container} from 'react-bootstrap';
-import '../css/RepoHeader.css';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faDatabase} from "@fortawesome/free-solid-svg-icons";
+import '../css/RepoHeader.css';
 
 class RepoHeader extends React.Component {
   constructor(props) {
@@ -48,7 +48,7 @@ class RepoHeader extends React.Component {
           <Navbar.Brand>
             <FontAwesomeIcon icon={faDatabase}/>&nbsp;
           </Navbar.Brand>
-          <Nav className="mr-auto" navbar>
+          <Nav className="me-auto" navbar>
             {this.props.path_list.map(this.renderBreadcrumb)}
           </Nav>
         </Container>
