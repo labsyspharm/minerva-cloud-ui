@@ -1,10 +1,13 @@
 import React from 'react';
-import '../css/LoginPage.css';
-import alertify from 'alertifyjs';
 import 'alertifyjs/build/css/alertify.min.css';
+import alertify from 'alertifyjs';
 import {AuthenticationDetails, CognitoUser, CookieStorage} from 'amazon-cognito-identity-js';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {faBackward, faEnvelope, faKey, faSpinner} from '@fortawesome/free-solid-svg-icons'
+import {Button, Form, InputGroup} from "react-bootstrap";
+
+import '../css/core.css';
+import '../css/LoginPage.css';
 
 class LoginPage extends React.Component {
   constructor(props) {
@@ -223,37 +226,71 @@ class LoginPage extends React.Component {
 
   renderLoginForm() {
     return (
-      <form>
+      <>
         <h2 className="h2 mb-3 loginHeader">
           <img alt="Minerva logo" width="300px" src="Minerva_FinalLogo_RGB.svg"></img>
         </h2>
-        <div className="loginForm">
-          <div className="input-group mb-3">
-            <div className="input-group-prepend">
-              <span className="input-group-text" id="basic-addon1"><FontAwesomeIcon icon={faEnvelope}/></span>
-            </div>
-            <input type="email" className="form-control" placeholder="Email or Phone" id="username" name="username"
-                   onChange={this.handleChange} aria-describedby="emailHelp"/>
+        <Form>
+          <InputGroup className="mb-3">
+            <InputGroup.Text>
+              <FontAwesomeIcon icon={faEnvelope}/>
+            </InputGroup.Text>
+            <Form.Control
+              type="email"
+              id="username"
+              name="username"
+              placeholder="Email of Phone"
+              aria-describedby="emailHelp"
+              onChange={this.handleChange}
+            />
+          </InputGroup>
+          <Form.Group className="mb-3">
+            <InputGroup>
+              <InputGroup.Text>
+                <FontAwesomeIcon icon={faKey}/>
+              </InputGroup.Text>
+              <Form.Control
+                type="password"
+                placeholder="Password"
+                id="password"
+                name="password"
+                aria-describedby="emailHelp"
+                onChange={this.handleChange}
+                onKeyPress={this.enterPressed}
+              />
+            </InputGroup>
+            <Form.Text>
+              <a
+                className="text-center"
+                href="#"
+                onClick={this.forgotPassword}>
+                Forgot your password?
+              </a>
+            </Form.Text>
+          </Form.Group>
+          <div className="d-grid gap-2">
+            <Button
+              className="mb-3"
+              disabled={this.state.loginSpinner}
+              onClick={this.login}
+            >
+              Sign in
+              {this.state.loginSpinner &&
+              <FontAwesomeIcon icon={faSpinner} size="lg" className="float-right" spin />
+              }
+            </Button>
           </div>
-          <div className="input-group mb-3">
-            <div className="input-group-prepend">
-              <span className="input-group-text" id="basic-addon1"><FontAwesomeIcon icon={faKey}/></span>
-            </div>
-            <input type="password" className="form-control" placeholder="Password" id="password" name="password"
-                   onChange={this.handleChange} onKeyPress={this.enterPressed} aria-describedby="emailHelp"/>
+          <div className="d-grid gap-2">
+            <Button
+              class="mb-3"
+              variant="outline-light"
+              onClick={this.anonymousLogin}
+            >
+              Continue as Guest
+            </Button>
           </div>
-          <button type="button" className="btn form-control btn-primary mb-3" disabled={this.state.loginSpinner}
-                  onClick={this.login}>Sign in
-            {this.state.loginSpinner ?
-              <FontAwesomeIcon className="float-right" icon={faSpinner} size="lg" spin/> : null}
-          </button>
-          <a href="#" onClick={this.forgotPassword}>Forgot your password?</a><br></br>
-          <button type="button" className="btn form-control btn-outline-light mt-3"
-                  onClick={this.anonymousLogin}>Continue as Guest
-          </button>
-
-        </div>
-      </form>
+        </Form>
+      </>
     );
   }
 
