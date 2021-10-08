@@ -346,7 +346,10 @@ class ImageView extends React.Component {
           backdrop={false}
         >
           <Offcanvas.Header>
-            <Offcanvas.Title>Settings</Offcanvas.Title>
+            <Offcanvas.Title>
+              <FontAwesomeIcon icon={faSlidersH} />&nbsp;
+              Settings
+            </Offcanvas.Title>
             <CloseButton variant="white" onClick={this.handleClose}/>
           </Offcanvas.Header>
           <Offcanvas.Body>
