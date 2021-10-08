@@ -1,5 +1,5 @@
 import React from "react";
-import {Col, Container, Row} from "react-bootstrap";
+import {Col, Button, Container, Row, Offcanvas, CloseButton} from "react-bootstrap";
 
 import "../css/ImageView.css";
 import '../css/core.css';
@@ -10,6 +10,8 @@ import ChannelGroups from "../components/ChannelGroups";
 import RenderingSettings from "../components/RenderingSettings";
 import OSDViewer from "../components/OSDViewer";
 import Loader from "../components/Loader";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faSlidersH} from "@fortawesome/free-solid-svg-icons";
 
 class ImageView extends React.Component {
   constructor(props) {
@@ -24,6 +26,7 @@ class ImageView extends React.Component {
       loading: true,
       channels: null,
       renderMode: null,
+      showRhPanel: false,
     }
 
     this.selectChannelGroup = this.selectChannelGroup.bind(this);
@@ -31,6 +34,8 @@ class ImageView extends React.Component {
     this.onChannelDeleted = this.onChannelDeleted.bind(this);
     this.onChannelAdded = this.onChannelAdded.bind(this);
     this.autoSettings = this.autoSettings.bind(this);
+    this.handleShow = this.handleShow.bind(this);
+    this.handleClose = this.handleClose.bind(this);
   }
 
   componentDidMount() {
@@ -284,6 +289,7 @@ class ImageView extends React.Component {
           <Container fluid>
             <Row>
               <div className="viewer overflow-hidden">
+                {this.renderRightHandPanel()}
                 <OSDViewer
                   metadata={this.state.osdMetadata}
                   activeGroup={this.state.selectedChannelGroup}
@@ -295,7 +301,6 @@ class ImageView extends React.Component {
                   <Loader active={this.state.loading} size="large" />
                 </div>
               </div>
-              {this.renderRightHandPanel()}
             </Row>
           </Container>
         </div>
@@ -303,40 +308,79 @@ class ImageView extends React.Component {
     )
   }
 
+  handleShow() {
+    this.setState({
+      showRhPanel: true
+    })
+  }
+
+  handleClose() {
+    this.setState({
+      showRhPanel: false
+    })
+  }
+
   renderRightHandPanel() {
     if (!this.state.imageDetails) {
       return null;
     }
     return (
-      <div className="metadata">
-        <h5 className="h5 text-left">METADATA</h5>
-        <ImageMetadata
-          metadata={this.state.imageDetails}
-          image={this.state.selectedImage}
-        />
-        <hr/>
+      <>
+        {!this.state.showRhPanel &&
+          <Button
+            className="metadata"
+            variant="primary"
+            onClick={this.handleShow}
+          >
+            <FontAwesomeIcon icon={faSlidersH} />&nbsp;
+            Settings
+          </Button>
+        }
 
-        <ChannelGroups
-          groups={this.state.channelGroups}
-          onChannelGroupSelected={this.selectChannelGroup}
-          node={this.state.selectedImage}
-          selectedItem={this.state.selectedChannelGroup}
-          guest={this.props.login_state.guest}
-          channels={this.state.channels}
-          image={this.state.selectedImage}
-          onAutoSettings={this.autoSettings}
-        />
-        <div className="rendering-settings">
-          <RenderingSettings
-            channelGroup={this.state.selectedChannelGroup}
-            metadata={this.state.imageDetails}
-            handleChange={this.onRenderingSettingsChanged}
-            onDelete={this.onChannelDeleted}
-            onAdd={this.onChannelAdded}
-            guest={this.props.login_state.guest}
-          />
-        </div>
-      </div>
+        <Offcanvas
+          className="settings-menu"
+          show={this.state.showRhPanel}
+          onHide={this.handleClose}
+          placement="end"
+          scroll={true}
+          backdrop={false}
+        >
+          <Offcanvas.Header>
+            <Offcanvas.Title>Settings</Offcanvas.Title>
+            <CloseButton variant="white" onClick={this.handleClose}/>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+            <h5 className="h5 text-left">METADATA</h5>
+            <ImageMetadata
+              metadata={this.state.imageDetails}
+              image={this.state.selectedImage}
+            />
+            <hr/>
+
+            <ChannelGroups
+              groups={this.state.channelGroups}
+              onChannelGroupSelected={this.selectChannelGroup}
+              node={this.state.selectedImage}
+              selectedItem={this.state.selectedChannelGroup}
+              guest={this.props.login_state.guest}
+              channels={this.state.channels}
+              image={this.state.selectedImage}
+              onAutoSettings={this.autoSettings}
+            />
+            <div className="rendering-settings">
+              <RenderingSettings
+                channelGroup={this.state.selectedChannelGroup}
+                metadata={this.state.imageDetails}
+                handleChange={this.onRenderingSettingsChanged}
+                onDelete={this.onChannelDeleted}
+                onAdd={this.onChannelAdded}
+                guest={this.props.login_state.guest}
+              />
+            </div>
+          </Offcanvas.Body>
+
+        </Offcanvas>
+      </>
     );
   }
 }

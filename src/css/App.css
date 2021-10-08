@@ -1,7 +1,7 @@
 .App {
-  max-height: 100vh;
-  overflow: auto;
-  background-color:black;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #000000;
 }
 
 .App-logo {
@@ -15,21 +15,6 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -39,37 +24,11 @@
   }
 }
 
-/* width */
-::-webkit-scrollbar {
-  width: 20px;
-}
-
-/* Track */
-::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px grey;
-  border-radius: 5px;
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: #6c757d;
-  border-radius: 10px;
-}
-
-.header {
-  font-size: 1rem;
-}
-
 .copyright {
   position: fixed;
   bottom: 10px;
-  right: 0;
+  right: 5px;
   font-size: 12px;
-}
-
-.container-fullheight {
-  height: calc(100vh - 40px);
-  overflow: hidden;
 }
 
 .modal-backdrop {

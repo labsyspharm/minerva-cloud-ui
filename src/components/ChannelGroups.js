@@ -94,7 +94,7 @@ class ChannelGroups extends React.Component {
                         </button>
                     : null }
                 </h5>
-                <div class="dropdown">
+                <div className="dropdown">
                     <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         { dropdownLabel }
                     </button>

@@ -12,6 +12,7 @@ import {
 } from 'amazon-cognito-identity-js';
 import AppConfig from './AppConfig';
 import './css/App.css';
+import './css/core.css';
 import ImageView from "./pages/ImageView";
 
 

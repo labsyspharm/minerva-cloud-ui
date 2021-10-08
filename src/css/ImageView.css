@@ -1,25 +1,27 @@
 .image-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 
 .viewer {
+    overflow: auto;
     width: 100%;
     height: calc(100vh - 40px);
 }
 
 .metadata {
-    background-color: rgba(0, 0, 0, 0.6);
-    width: 300px;
     position: fixed;
-    right: 0px;
+    right: 1em;
+    margin: 0.5em;
     float: right;
-    margin-top: 0px;
-    margin-right: 0;
-    padding: 10px;
-    border-radius: 5px;
-    overflow-x: hidden;
-    overflow-y: auto;
-    max-height: 95vh;
-    scrollbar-color: dark;
+    z-index: 111;
+}
+
+.settings-menu {
+    color: #becbd6;
+    background-color: #00000099;
 }
 
 .rendering-settings {
