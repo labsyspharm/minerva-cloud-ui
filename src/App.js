@@ -88,7 +88,7 @@ class App extends React.Component {
         return (
             <div className="App text-light">
                 <Header login_state={login_state}/>
-                <Router>
+                <Router className="router-container">
                     <LoginPage
                       path="/login"
                       loggedIn={this.state.loggedIn}

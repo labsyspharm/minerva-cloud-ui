@@ -277,7 +277,7 @@ class ImageView extends React.Component {
       );
 
     return (
-      <>
+      <div className="image-view">
         <RepoHeader
           path_list={[
             {elem: "Repositories", link: "/repositories"},
@@ -285,26 +285,23 @@ class ImageView extends React.Component {
             {elem: this.state.image_name, link: null}
           ]}
         />
-        <div className="image-view">
-          <Container fluid>
-            <Row>
-              <div className="viewer overflow-hidden">
-                {this.renderRightHandPanel()}
-                <OSDViewer
-                  metadata={this.state.osdMetadata}
-                  activeGroup={this.state.selectedChannelGroup}
-                  channelGroups={this.state.channelGroups}
-                  channels={this.state.channels}
-                  ignoreRenderUpdate={this.state.ignoreRenderUpdate}
-                />
-                <div className="minerva-loader-center">
-                  <Loader active={this.state.loading} size="large" />
-                </div>
-              </div>
-            </Row>
-          </Container>
+        <div className="image-view-box">
+          <div className="viewer overflow-hidden">
+            {this.renderRightHandPanel()}
+            <OSDViewer
+              metadata={this.state.osdMetadata}
+              activeGroup={this.state.selectedChannelGroup}
+              channelGroups={this.state.channelGroups}
+              channels={this.state.channels}
+              ignoreRenderUpdate={this.state.ignoreRenderUpdate}
+            />
+            <div className="minerva-loader-center">
+              <Loader active={this.state.loading} size="large" />
+
+            </div>
+          </div>
         </div>
-      </>
+      </div>
     )
   }
 
