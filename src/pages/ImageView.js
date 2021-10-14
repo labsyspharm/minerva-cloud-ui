@@ -281,8 +281,8 @@ class ImageView extends React.Component {
         <RepoHeader
           path_list={[
             {elem: "Repositories", link: "/repositories"},
-            {elem: this.state.repo_name, link: null},
-            {elem: this.state.image_name, link: null}
+            {elem: this.state.repo_name, link: `/repositories/${this.state.repo_uuid}`},
+            {elem: this.state.image_name}
           ]}
         />
         <div className="image-view-box">
