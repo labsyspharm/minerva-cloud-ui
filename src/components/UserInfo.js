@@ -5,6 +5,7 @@ import { CognitoUserPool, CookieStorage } from 'amazon-cognito-identity-js';
 import AppConfig from '../AppConfig';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons'
+import { NavDropdown, Nav } from "react-bootstrap";
 
 alertify.set('notifier', 'position', 'top-right');
 
@@ -19,7 +20,6 @@ class UserInfo extends React.Component {
 
         this.state = {
             cognitoUserPool: userPool,
-            loggedIn: false
         }
 
         this.logout = this.logout.bind(this);
@@ -27,36 +27,32 @@ class UserInfo extends React.Component {
     }
 
     logout() {
-        this.setState({ loggedIn: false });
         localStorage.removeItem('loggedInUser');
         let cognitoUser = this.state.cognitoUserPool.getCurrentUser();
         if (cognitoUser) {
             cognitoUser.signOut();
         }
-        
-        this.props.logoutSuccess();
+        this.props.login_state.logoutSuccess();
     }
 
     render() {
-        // {this.props.loggedInUser}
         return (
-                <ul className="navbar-nav ml-auto">
-                <li className="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="accountDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Account
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdown">
-                        <a class="dropdown-item" disabled href="#">
-                            <FontAwesomeIcon icon={faUser} />&nbsp;
-                            {this.props.loggedInUser}
-                        </a>
-                        <a class="dropdown-item" href="#" onClick={this.logout}>
-                            <FontAwesomeIcon icon={faSignOutAlt} />&nbsp;
-                            Sign out
-                        </a>
-                    </div>
-                </li>
-                </ul>
+        <Nav>
+            <NavDropdown
+              id='nav-account-dropdown'
+              title='Account'
+              align="end"
+            >
+                <NavDropdown.Item>
+                    <FontAwesomeIcon icon={faUser}/>&nbsp;
+                    {this.props.login_state.loggedInUser}
+                </NavDropdown.Item>
+                <NavDropdown.Item onClick={this.logout}>
+                    <FontAwesomeIcon icon={faSignOutAlt}/>&nbsp;
+                    Sing out
+                </NavDropdown.Item>
+            </NavDropdown>
+        </Nav>
         );
     }
 

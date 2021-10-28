@@ -1,0 +1,16 @@
+.repository-view {
+    padding: 1em;
+}
+
+.uuid-display {
+    padding-top: 0.5em;
+    color: #889988;
+}
+
+.repo-name {
+    padding-right: 0.5em;
+}
+
+.img-link {
+    padding-right: 0.5em;
+}

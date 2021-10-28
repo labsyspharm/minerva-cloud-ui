@@ -11,21 +11,19 @@ class RenderingSettings extends React.Component {
         if (!this.props.channelGroup) {
             return null;
         }
-        let ranges = this.props.channelGroup.channels.map((channel, index) => {
-            return (
-                <div key={index}>
-                    <Range channel={channel}
-                        channelGroup={this.props.channelGroup}
-                        handleChange={this.props.handleChange}
-                        onDelete={this.props.onDelete}
-                        guest={this.props.guest}
-                        />
-                </div>
-            );
-        });
         return (
             <div>
-                { ranges }
+                { this.props.channelGroup.channels.map((channel, index) => (
+                      <div key={index}>
+                          <Range channel={channel}
+                                 channelGroup={this.props.channelGroup}
+                                 handleChange={this.props.handleChange}
+                                 onDelete={this.props.onDelete}
+                                 guest={this.props.guest}
+                          />
+                      </div>
+                    ))
+                }
                 <div>
                 <div class="dropdown">
                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

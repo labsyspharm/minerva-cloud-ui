@@ -1,64 +1,65 @@
 import React from 'react';
 import UserInfo from './UserInfo';
 import { Link } from "@reach/router";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { Navbar, Nav, Container } from 'react-bootstrap';
+import '../css/Header.css';
+import '../css/core.css';
 
 class Header extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
 
   render() {
-    if (!this.props.loggedIn) {
+    if (!this.props.login_state.loggedIn) {
       return null;
     }
     return (
-      <nav className="navbar navbar-expand-lg navbar-dark primary-color bg-dark header">
+      <Navbar
+        collapseOnSelect
+        bg="dark"
+        variant="dark"
+        expand="md"
+      >
+        <Container fluid>
+          <Navbar.Brand href="#">
+            <img width="180px" src="Minerva-Cloud_HorizLogo_RGB.svg"></img>
+          </Navbar.Brand>
 
-        <a className="navbar-brand bg-dark" href="#">
-          <img width="180px" src="Minerva-Cloud_HorizLogo_RGB.svg"></img>
-        </a>
+          <Navbar.Toggle
+            aria-controls="navbar-collapse"
+          />
 
-        <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#basicExampleNav"
-          aria-controls="basicExampleNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span className="navbar-toggler-icon"></span>
-        </button>
+          <Navbar.Collapse id="navbar-collapse">
 
-        <div className="collapse navbar-collapse" id="basicExampleNav">
+            <Nav className="me-auto" navbar>
 
-          <ul className="navbar-nav mr-auto">
+              <Nav.Link as={Link} to="/repositories">
+                Repositories
+              </Nav.Link>
+              { !this.props.login_state.guest &&
+              <Nav.Link as={Link} to="/import">
+                Import
+              </Nav.Link>
+              }
+              { !this.props.login_state.guest &&
+              <Nav.Link as={Link} to="/permissions">
+                Permissions
+              </Nav.Link>
+              }
+            </Nav>
+            { this.props.login_state.loggedIn &&
+            <UserInfo login_state={this.props.login_state} />
+            }
 
-            <li className="nav-item">
-              <Link className="nav-link" to="/repositories">Repositories</Link>
-            </li>
-            { !this.props.guest ? this.renderImportMenu() : null }
-            { !this.props.guest ? this.renderPermissionsMenu() : null }
-          </ul>
-          { this.props.loggedIn ? 
-            <UserInfo logoutSuccess={this.props.logoutSuccess} 
-              loggedInUser={this.props.loggedInUser} 
-              guest={this.props.guest} /> 
-          : null }
+          </Navbar.Collapse>
 
-        </div>
+        </Container>
 
-      </nav>
+      </Navbar>
     );
   }
-
-  renderImportMenu() {
-    return (
-      <li className="nav-item">
-        <Link className="nav-link" to="import">Import</Link>
-      </li>
-    );
-  }
-
-  renderPermissionsMenu() {
-    return (
-      <li className="nav-item">
-        <Link className="nav-link" to="permissions">Permissions</Link>
-      </li> 
-    );
-  }
-
 }
 
 

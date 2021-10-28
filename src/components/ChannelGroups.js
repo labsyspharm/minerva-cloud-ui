@@ -6,6 +6,7 @@ import Spinner from './Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMagic } from '@fortawesome/free-solid-svg-icons'
 import '../css/ChannelGroups.css';
+import {Button, Dropdown} from "react-bootstrap";
 
 class ChannelGroups extends React.Component {
 
@@ -66,13 +67,18 @@ class ChannelGroups extends React.Component {
                 "label": this.props.selectedItem.label,
                 "channels": this.props.channels
             }
-        if (this.props.selectedItem.uuid && this.props.selectedItem.uuid !== '00000000-0000-0000-0000-000000000000') {
+        if (
+          this.props.selectedItem.uuid
+          && this.props.selectedItem.uuid !== '00000000-0000-0000-0000-000000000000'
+        ) {
             group.uuid = this.props.selectedItem.uuid;
         }
         let groups = {
             "groups": [ group ]
         }
-        this.setState({channelGroupsJson: JSON.stringify(groups, null, 2)});
+        this.setState({
+            channelGroupsJson: JSON.stringify(groups, null, 2)
+        });
     }
 
     render() {
@@ -84,67 +90,109 @@ class ChannelGroups extends React.Component {
             dropdownLabel = this.props.selectedItem.label;
         }
         return (
-            <div className="btn-group-toggle" data-toggle="buttons">
+            <div
+              className="btn-group-toggle"
+              data-toggle="buttons"
+            >
                 { this.renderModal() }
-                <h5 className="h5">CHANNEL GROUPS
+                <h5 className="h5">
+                    CHANNEL GROUPS
                     &nbsp;
-                    { !this.props.guest ?
-                        <button type="button" className="btn btn-success" onClick={this.showModal} data-toggle="modal" data-target="#addChannelGroupModal">
+                    { !this.props.guest &&
+                        <Button
+                          onClick={this.showModal}
+                          data-toggle="modal"
+                          data-target="#addChannelGroupModal"
+                        >
                             Save
-                        </button>
-                    : null }
+                        </Button>
+                    }
                 </h5>
-                <div class="dropdown">
-                    <button className="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <Dropdown>
+                    <Dropdown.Toggle
+                      variant="secondary"
+                      id="dropdownMenuButton"
+                    >
                         { dropdownLabel }
-                    </button>
-                    <div className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
                         {this.props.groups.map((item, index) => {
                         return (
-                            <a className="dropdown-item" key={index} href="#" onClick={() => this.select(item, index)}>
+                            <Dropdown.Item
+                              key={index}
+                              href="#"
+                              onClick={() => this.select(item, index)}
+                            >
                                 {item.label}
-                            </a>
+                            </Dropdown.Item>
                             );
                         })}
-                    </div>
-                    <button className="btn btn-secondary float-right" type="button" onClick={this.autoSettings} disabled={this.state.autoSettingsSpinner}>
+                    </Dropdown.Menu>
+                    {' '}
+                    <Button
+                      variant="secondary"
+                      onClick={this.autoSettings}
+                      disabled={this.state.autoSettingsSpinner}
+                    >
                         { this.state.autoSettingsSpinner ? 
                             <Spinner show={this.state.autoSettingsSpinner} />
                             :
                             <FontAwesomeIcon icon={faMagic} />
                         }
                         &nbsp;Auto
-                    </button>
-                </div>
-                    
+                    </Button>
+                </Dropdown>
             </div>
         );
     }
 
     renderModal() {
         return (
-            <div id="addChannelGroupModal" className="modal" tabIndex="-1" role="dialog" aria-labelledby="addChannelGroupModal" aria-hidden="true">
-            <div className="modal-dialog modal-lg" role="document">
-                <div className="modal-content">
-                <div className="modal-header">
-                    <h5 className="modal-title text-dark">Add Channel Group</h5>
-                    <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
+            <div
+              id="addChannelGroupModal"
+              className="modal"
+              tabIndex="-1"
+              role="dialog"
+              aria-labelledby="addChannelGroupModal"
+              aria-hidden="true"
+            >
+                <div className="modal-dialog modal-lg" role="document">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title text-dark">Add Channel Group</h5>
+                            <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div className="modal-body text-dark">
+                            <p>Paste channel groups below in json format.</p>
+                            <code>
+                                <textarea
+                                  className="form-control jsonTextarea"
+                                  value={this.state.channelGroupsJson}
+                                  onChange={(e) => this.handleJsonChange(e)}
+                                />
+                            </code>
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={this.addChannelGroup}
+                              data-dismiss="modal"
+                            >
+                                Save changes
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-secondary"
+                              data-dismiss="modal"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div className="modal-body text-dark">
-                    <p>Paste channel groups below in json format.</p>
-                    <code>
-                        <textarea className="form-control jsonTextarea" value={this.state.channelGroupsJson}
-                            onChange={(e) => this.handleJsonChange(e)}></textarea>
-                    </code>
-                </div>
-                <div className="modal-footer">
-                    <button type="button" className="btn btn-primary" onClick={this.addChannelGroup} data-dismiss="modal">Save changes</button>
-                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-                </div>
-            </div>
             </div>
         );
     }

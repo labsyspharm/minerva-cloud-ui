@@ -1,10 +1,9 @@
 import React from 'react';
-import './css/App.css';
 import Header from './components/Header';
 import ImportTool from './pages/ImportTool';
-import Repositories from './pages/Repositories';
+import RepositoryList from './pages/RepositoryList';
+import RepositoryView from './pages/RepositoryView';
 import Permissions from './pages/Permissions';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { Router, navigate } from "@reach/router";
 import Client from './MinervaClient';
 import LoginPage from './pages/LoginPage';
@@ -12,6 +11,10 @@ import {
     CognitoUserPool, CookieStorage
 } from 'amazon-cognito-identity-js';
 import AppConfig from './AppConfig';
+import './css/App.css';
+import './css/core.css';
+import ImageView from "./pages/ImageView";
+
 
 class App extends React.Component {
 
@@ -66,7 +69,6 @@ class App extends React.Component {
         if (navigateRoot) {
             navigate('/repositories');
         }
-        
     }
 
     logoutSuccess() {
@@ -77,17 +79,50 @@ class App extends React.Component {
     }
 
     render() {
+        let login_state = {
+            loggedIn: this.state.loggedIn,
+            loggedInUser: this.state.loggedInUser,
+            guest: this.state.guest,
+            logoutSuccess: this.logoutSuccess
+        }
         return (
             <div className="App text-light">
-                <Header logoutSuccess={this.logoutSuccess} loggedIn={this.state.loggedIn} loggedInUser={this.state.loggedInUser} guest={this.state.guest} />
-                <Router className="container-fluid text-light container-fullheight">
-                    <LoginPage path="/login" loggedIn={this.state.loggedIn} loginSuccess={this.loginSuccess} userPool={this.state.userPool} />
-                    <ImportTool path="/import" loggedIn={this.state.loggedIn} />
-                    <Repositories default path="/repositories" loggedIn={this.state.loggedIn} guest={this.state.guest} />
-                    <Permissions path="/permissions/:repositoryUuid" loggedIn={this.state.loggedIn} />
-                    <Permissions path="/permissions" loggedIn={this.state.loggedIn} />
+                <Header login_state={login_state}/>
+                <Router className="router-container">
+                    <LoginPage
+                      path="/login"
+                      loggedIn={this.state.loggedIn}
+                      loginSuccess={this.loginSuccess}
+                      userPool={this.state.userPool}
+                    />
+                    <ImportTool
+                      path="/import"
+                      loggedIn={this.state.loggedIn}
+                    />
+                    <RepositoryList
+                      default path="/repositories"
+                      login_state={login_state}
+                    />
+                    <RepositoryView
+                      path="/repositories/:repositoryUuid"
+                      login_state={login_state}
+                    />
+                    <ImageView
+                      path="/images/:imageUuid"
+                      login_state={login_state}
+                    />
+                    <Permissions
+                      path="/permissions/:repositoryUuid"
+                      loggedIn={this.state.loggedIn}
+                    />
+                    <Permissions
+                      path="/permissions"
+                      loggedIn={this.state.loggedIn}
+                    />
                 </Router>
-                <footer className="copyright">©2020, Laboratory of Systems Pharmacology. All rights reserved.</footer>
+                <footer className="copyright">
+                    ©2020, Laboratory of Systems Pharmacology. All rights reserved.
+                </footer>
             </div>
         );
     }
