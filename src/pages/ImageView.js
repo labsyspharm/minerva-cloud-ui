@@ -367,16 +367,14 @@ class ImageView extends React.Component {
               image={this.state.selectedImage}
               onAutoSettings={this.autoSettings}
             />
-            <div className="rendering-settings">
-              <RenderingSettings
-                channelGroup={this.state.selectedChannelGroup}
-                metadata={this.state.imageDetails}
-                handleChange={this.onRenderingSettingsChanged}
-                onDelete={this.onChannelDeleted}
-                onAdd={this.onChannelAdded}
-                guest={this.props.login_state.guest}
-              />
-            </div>
+            <RenderingSettings
+              channelGroup={this.state.selectedChannelGroup}
+              metadata={this.state.imageDetails}
+              handleChange={this.onRenderingSettingsChanged}
+              onDelete={this.onChannelDeleted}
+              onAdd={this.onChannelAdded}
+              guest={this.props.login_state.guest}
+            />
           </Offcanvas.Body>
 
         </Offcanvas>
