@@ -59,6 +59,7 @@ class LoginPage extends React.Component {
         userAttributes.name = userAttributes.email;
         userAttributes.preferred_username = userAttributes.name;
         delete userAttributes.email_verified;
+        delete userAttributes.email;
         this.state.cognitoUser.completeNewPasswordChallenge(this.state.password, userAttributes, {
             onSuccess: (data) => this.passwordChallengeSuccess(data),
             onFailure: err => {
